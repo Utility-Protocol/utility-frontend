@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useEffect, useRef } from 'react';
-import { atomicSwapTile, getTile } from './heatmapStore';
+import { getTile } from './heatmapStore';
 import { updateBoundary, getAffectedTiles } from './boundaryManager';
 
 interface AssetPosition {
@@ -32,7 +32,7 @@ export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate }: HeatmapP
         id: boundary.id,
         layer: boundary.layer,
         tiles,
-        updateFn: async (tileKey: string) => {
+        updateFn: async (_tileKey: string) => {
           const heatValues = new Float32Array(256 * 256);
           for (const asset of assets) {
             const tx = Math.floor((asset.lng - boundary.region.minX) / (boundary.region.maxX - boundary.region.minX) * 256);
@@ -43,14 +43,9 @@ export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate }: HeatmapP
           }
           return heatValues;
         },
-      }).then(() => {
-        const data = getTile(tiles[0]);
-        if (data && onTileUpdate) {
-          onTileUpdate(tiles[0], data);
-        }
       });
     }
-  }, [assets, boundaries, onTileUpdate]);
+  }, [assets, boundaries]);
 
-  return <canvas ref={canvasRef} style={{ display: 'none' }} />;
+  return <canvas ref={canvasRef} width={800} height={600} />;
 }
