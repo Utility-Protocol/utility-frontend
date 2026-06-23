@@ -1,0 +1,12 @@
+{
+  "app.title": "Utility Protocol — Spatial DePIN Dashboard",
+  "settings.language": "Sprache",
+  "tariff.kwh": "{value, plural, one {# kWh} other {# kWh}}",
+  "meter.status.online": "Online",
+  "meter.status.offline": "Offline",
+  "error.network": "Netzwerkfehler. Bitte erneut versuchen.",
+  "compliance.notice": "Dieses Gerät entspricht den lokalen Vorschriften.",
+  "date.short": "{ts, date, short}",
+  "currency.default": "EUR",
+  "meter.readings": "{count, plural, one {# Messung} other {# Messungen}}"
+}

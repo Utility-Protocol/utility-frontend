@@ -1,0 +1,12 @@
+{
+  "app.title": "Panel Utility Protocol — DePIN Espacial",
+  "settings.language": "Idioma",
+  "tariff.kwh": "{value, plural, one {# kWh} other {# kWh}}",
+  "meter.status.online": "En línea",
+  "meter.status.offline": "Sin conexión",
+  "error.network": "Error de red. Intenta de nuevo.",
+  "compliance.notice": "Este dispositivo cumple con las regulaciones locales.",
+  "date.short": "{ts, date, short}",
+  "currency.default": "MXN",
+  "meter.readings": "{count, plural, one {# lectura} other {# lecturas}}"
+}
