@@ -8,7 +8,7 @@ type Translations = Record<string, string>;
 
 type I18nContextValue = {
   locale: Locale;
-  t: (key: string, values?: Record<string, any>) => string;
+  t: (key: string, values?: Record<string, unknown>) => string;
   setLocale: (l: Locale) => void;
   translations: Translations | null;
 };
@@ -36,7 +36,8 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
         const mod = await import(/* webpackChunkName: "locale-[request]" */ `./locales/${locale}.json`);
         if (!mounted) return;
         setTranslations(mod.default || mod);
-      } catch (e) {
+      } catch (err) {
+        if (process.env.NODE_ENV === "development") console.warn("i18n load error:", err);
         if (locale !== DEFAULT_LOCALE) {
           // try fallback
           const mod = await import(/* webpackChunkName: "locale-en-US" */ `./locales/${DEFAULT_LOCALE}.json`);
@@ -68,7 +69,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(l);
   };
 
-  const t = (key: string, values: Record<string, any> = {}) => {
+  const t = (key: string, values: Record<string, unknown> = {}) => {
     const msg = translations?.[key] ?? undefined;
     if (!msg) {
       if (process.env.NODE_ENV === "development") {

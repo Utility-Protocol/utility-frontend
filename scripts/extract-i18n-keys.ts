@@ -22,4 +22,4 @@ walk(root, (file) => {
 const out: Record<string, string> = {};
 for (const k of Array.from(keys).sort()) out[k] = "";
 fs.writeFileSync(path.join(root, "i18n-keys.json"), JSON.stringify(out, null, 2));
-console.log("Wrote src/i18n-keys.json with", Object.keys(out).length, "keys");
+console.warn("Wrote src/i18n-keys.json with", Object.keys(out).length, "keys");

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useTranslation } from "@/i18n/useTranslation";
-import { SUPPORTED_LOCALES } from "@/i18n/config";
+import { SUPPORTED_LOCALES, Locale } from "@/i18n/config";
 
 const FLAGS: Record<string, string> = {
   "en-US": "🇺🇸",
@@ -24,7 +24,7 @@ export function LanguageSwitcher() {
       <select
         aria-label={t("settings.language")}
         value={locale}
-        onChange={(e) => setLocale(e.target.value as any)}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setLocale(e.target.value as Locale)}
         className="rounded border px-2 py-1"
       >
         {SUPPORTED_LOCALES.map((l) => (
