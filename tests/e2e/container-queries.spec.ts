@@ -32,7 +32,7 @@ test.describe("Container Query Layout System", () => {
       // All major sections should be visible
       await expect(page.getByText("Grid Network")).toBeVisible();
       await expect(page.getByText("Fleet Overview")).toBeVisible();
-      await expect(page.getByText("Live Telemetry")).toBeVisible();
+      await expect(page.getByText("Live Telemetry", { exact: true })).toBeVisible();
       await expect(page.getByText("Tariff Configuration")).toBeVisible();
     });
   });
