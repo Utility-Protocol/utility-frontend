@@ -1,0 +1,36 @@
+/*
+ * Container Breakpoints (Custom Properties)
+ *
+ * These custom properties expose compact / medium / expanded breakpoint
+ * thresholds per container so JavaScript can query them at runtime
+ * without hard-coding values.
+ *
+ * Generic properties (`--container-compact-max`, `--container-expanded-min`)
+ * are read by the `useContainerSize` hook. Per-container properties provide
+ * finer-grained overrides for specific layout regions.
+ *
+ * The breakpoints match the thresholds used in containers.css.
+ */
+:root {
+  /* Generic defaults (used by useContainerSize hook) */
+  --container-compact-max: 400px;
+  --container-expanded-min: 800px;
+
+  /* Sidebar breakpoints */
+  --sidebar-compact-max: 400px;
+  --sidebar-medium-min: 400px;
+  --sidebar-medium-max: 800px;
+  --sidebar-expanded-min: 800px;
+
+  /* Map panel breakpoints */
+  --map-panel-compact-max: 400px;
+
+  /* Data grid breakpoints */
+  --data-grid-compact-max: 600px;
+  --data-grid-medium-min: 600px;
+  --data-grid-medium-max: 1000px;
+  --data-grid-expanded-min: 1000px;
+
+  /* Charts area breakpoints */
+  --charts-compact-max: 500px;
+}
