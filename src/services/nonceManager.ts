@@ -29,7 +29,7 @@ class NonceManager {
     let currentSeq = BigInt(baseSequence);
 
     for (let i = 0; i < 20; i++) {
-      currentSeq += 1n;
+      currentSeq += BigInt(1);
       newPool.push(currentSeq.toString());
     }
 

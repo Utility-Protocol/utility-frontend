@@ -11,7 +11,7 @@ vi.mock("@/services/soroban", () => ({
 }));
 
 // Mock the stellar-sdk rpc
-let mockSequenceNumber = 100n;
+let mockSequenceNumber = BigInt(100);
 vi.mock("@stellar/stellar-sdk", () => ({
   rpc: {
     Server: vi.fn().mockImplementation(() => ({
@@ -31,7 +31,7 @@ describe("NonceManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     nonceManager.flushAccount(accountId);
-    mockSequenceNumber = 100n;
+    mockSequenceNumber = BigInt(100);
   });
 
   it("should pre-fetch nonces and acquire leases concurrently", async () => {
@@ -76,7 +76,7 @@ describe("NonceManager", () => {
     expect(initialLease.nonce).toBe("101");
 
     // The blockchain sequence moved forward out-of-band!
-    mockSequenceNumber = 200n;
+    mockSequenceNumber = BigInt(200);
 
     const response = await nonceManager.submitWithNonce({
       xdr: "INITIAL_XDR",
