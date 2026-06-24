@@ -10,22 +10,6 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
   },
-  projects: [
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-    },
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    },
-  ],
-  webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !!process.env.CI,
-    timeout: 120_000,
-  },
   // Only list chromium as an explicit project since CI only installs chromium.
   // webkit is available for local testing: install with `npx playwright install webkit`.
   projects: [
@@ -34,4 +18,10 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
+  webServer: {
+    command: "npm run dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: !!process.env.CI,
+    timeout: 120_000,
+  },
 });
