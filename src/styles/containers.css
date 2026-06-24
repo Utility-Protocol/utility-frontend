@@ -1,0 +1,255 @@
+/*
+ * CSS Container Query Layout System
+ *
+ * Each layout region is registered as a named containment context
+ * (container-type: inline-size) so descendant elements can use
+ * @container queries that respond to the container's inline size
+ * rather than the viewport.
+ *
+ * The components apply a single responsive class (e.g. sidebar-responsive)
+ * that is always present. The @container rules below activate the
+ * appropriate styles based on the container's actual inline width.
+ *
+ * Usage in JSX:
+ *   <div class="container-sidebar sidebar-responsive"> … </div>
+ *   <div class="container-map-panel"> … </div>
+ *   <div class="container-data-grid data-grid-responsive"> … </div>
+ *   <div class="container-charts-area charts-responsive"> … </div>
+ */
+
+/* ------------------------------------------------------------------ */
+/* Containment contexts --------------------------------------------- */
+/* ------------------------------------------------------------------ */
+
+.container-sidebar {
+  container-type: inline-size;
+  container-name: sidebar;
+}
+
+.container-map-panel {
+  container-type: inline-size;
+  container-name: map-panel;
+}
+
+.container-data-grid {
+  container-type: inline-size;
+  container-name: data-grid;
+}
+
+.container-charts-area {
+  container-type: inline-size;
+  container-name: charts-area;
+}
+
+/* ------------------------------------------------------------------ */
+/* Sidebar — responsive via @container sidebar ---------------------- */
+/* ------------------------------------------------------------------ */
+
+@container sidebar (inline-size < 400px) {
+  .sidebar-responsive {
+    width: 64px;
+    padding: 0.5rem;
+  }
+
+  .sidebar-responsive .sidebar-label {
+    display: none;
+  }
+
+  .sidebar-responsive .sidebar-icon {
+    width: 5cqw;
+    height: 5cqw;
+    min-width: 16px;
+    min-height: 16px;
+  }
+
+  .sidebar-responsive .sidebar-item {
+    justify-content: center;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+}
+
+@container sidebar (400px <= inline-size < 800px) {
+  .sidebar-responsive {
+    width: 220px;
+    padding: 1rem;
+  }
+}
+
+@container sidebar (inline-size >= 800px) {
+  .sidebar-responsive {
+    width: 320px;
+    padding: 1.5rem;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Map panel — control button layout via @container map-panel ------- */
+/* ------------------------------------------------------------------ */
+
+@container map-panel (inline-size < 400px) {
+  .map-controls {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .map-controls button {
+    padding: 0.25rem 0.5rem;
+    font-size: clamp(0.75rem, 3cqw, 0.875rem);
+  }
+}
+
+@container map-panel (inline-size >= 400px) {
+  .map-controls {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .map-controls button {
+    padding: 0.5rem 1rem;
+    font-size: clamp(0.875rem, 2cqw, 1rem);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Data grid — column visibility & density via @container data-grid - */
+/* ------------------------------------------------------------------ */
+
+/* Compact: hide secondary columns, dense rows */
+@container data-grid (inline-size < 600px) {
+  .data-grid-responsive .data-grid-cell-secondary {
+    display: none;
+  }
+
+  .data-grid-responsive .data-grid-row {
+    font-size: clamp(0.75rem, 3cqw, 0.875rem);
+    height: clamp(32px, 4cqw, 40px);
+  }
+}
+
+/* Medium: moderate padding */
+@container data-grid (600px <= inline-size < 1000px) {
+  .data-grid-responsive .data-grid-row {
+    font-size: clamp(0.875rem, 2cqw, 1rem);
+    height: clamp(40px, 3cqw, 48px);
+  }
+}
+
+/* Expanded: comfortable spacing, all columns visible */
+@container data-grid (inline-size >= 1000px) {
+  .data-grid-responsive .data-grid-row {
+    font-size: clamp(1rem, 2cqw, 1.125rem);
+    height: clamp(48px, 2.5cqw, 56px);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Charts area — grid vs stacked via @container charts-area --------- */
+/* ------------------------------------------------------------------ */
+
+@container charts-area (inline-size < 500px) {
+  .charts-responsive {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .charts-responsive .chart-wrapper {
+    aspect-ratio: 4 / 3;
+    width: 100%;
+  }
+}
+
+@container charts-area (inline-size >= 500px) {
+  .charts-responsive {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .charts-responsive .chart-wrapper {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Container query typography utilities ------------------------------ */
+/* ------------------------------------------------------------------ */
+
+.container-fluid-text {
+  font-size: clamp(14px, 1cqw, 20px);
+}
+
+.container-fluid-heading {
+  font-size: clamp(18px, 2.5cqw, 32px);
+}
+
+/* ------------------------------------------------------------------ */
+/* Grid layout helper using container query units ------------------- */
+/* ------------------------------------------------------------------ */
+
+.grid-container-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(200px, 30cqw), 1fr));
+  gap: 1rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Smooth container resize transitions ------------------------------- */
+/* ------------------------------------------------------------------ */
+
+.container-sidebar,
+.container-map-panel,
+.container-data-grid,
+.container-charts-area {
+  transition:
+    grid-template-columns 0.3s ease,
+    padding 0.3s ease,
+    width 0.3s ease;
+}
+
+/* ------------------------------------------------------------------ */
+/* Fallback for browsers without container query support ------------- */
+/* ------------------------------------------------------------------ */
+
+@supports not (container-type: inline-size) {
+  /* Sidebar fallback: media-query-based approximation */
+  @media (max-width: 768px) {
+    .sidebar-responsive {
+      width: 64px;
+    }
+
+    .sidebar-responsive .sidebar-label {
+      display: none;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .sidebar-responsive {
+      width: 280px;
+    }
+  }
+
+  /* Data grid fallback */
+  @media (max-width: 768px) {
+    .data-grid-responsive .data-grid-cell-secondary {
+      display: none;
+    }
+  }
+
+  /* Charts fallback */
+  @media (max-width: 768px) {
+    .charts-responsive {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .charts-responsive {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+  }
+}
