@@ -87,7 +87,7 @@ async function setupComponentTest(
     content: `*, *::before, *::after { animation: none !important; transition: none !important; }`,
   });
   await page.waitForTimeout(500);
-  await page.locator(selector).waitFor({ state: "visible", timeout: 10_000 });
+  await page.locator(selector).first().waitFor({ state: "visible", timeout: 10_000 });
 }
 
 /**
