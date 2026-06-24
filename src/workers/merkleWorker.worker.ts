@@ -1,7 +1,9 @@
 import { initMerkleTree, buildTree, generateProof } from '../utils/merkleTree';
 
 // Use the web worker interface
-self.addEventListener('message', async (e: MessageEvent) => {
+const worker = self as unknown as Worker;
+
+worker.addEventListener('message', async (e: MessageEvent) => {
     const { type, leaves, treePtr, leafIndex, id } = e.data;
 
     try {
@@ -10,12 +12,12 @@ self.addEventListener('message', async (e: MessageEvent) => {
         if (type === 'buildTree') {
             const { root, rootPtr } = buildTree(new Uint8Array(leaves));
             // Send ArrayBuffer back using transferable
-            self.postMessage({ id, type: 'buildTreeResult', root: root.buffer, rootPtr }, [root.buffer]);
+            worker.postMessage({ id, type: 'buildTreeResult', root: root.buffer, rootPtr }, [root.buffer as ArrayBuffer]);
         } else if (type === 'generateProof') {
             const proof = generateProof(treePtr, leafIndex);
-            self.postMessage({ id, type: 'generateProofResult', proof: proof.buffer }, [proof.buffer]);
+            worker.postMessage({ id, type: 'generateProofResult', proof: proof.buffer }, [proof.buffer as ArrayBuffer]);
         }
-    } catch (err: any) {
-        self.postMessage({ id, error: err.message });
+    } catch (err: unknown) {
+        worker.postMessage({ id, error: (err as Error).message });
     }
 });

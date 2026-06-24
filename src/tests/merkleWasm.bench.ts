@@ -11,14 +11,13 @@ global.fetch = async (url: RequestInfo | URL) => {
         return {
             arrayBuffer: async () => buffer,
             ok: true
-        } as Response;
+        } as unknown as Response;
     }
     throw new Error('Unexpected fetch in tests: ' + url);
 };
 
 // Mock instantiateStreaming since jsdom might not support it properly with our mocked fetch
-const originalInstantiateStreaming = WebAssembly.instantiateStreaming;
-global.WebAssembly.instantiateStreaming = async (response: Response | Promise<Response>, importObject?: WebAssembly.Imports) => {
+global.WebAssembly.instantiateStreaming = async (response: Response | PromiseLike<Response>, importObject?: WebAssembly.Imports) => {
     const res = await response;
     const buffer = await res.arrayBuffer();
     return WebAssembly.instantiate(buffer, importObject);
@@ -57,6 +56,7 @@ describe('MerkleWasm Benchmark', () => {
         const durationSec = (end - start) / 1000;
         const hashesPerSec = totalHashes / durationSec;
 
+        // eslint-disable-next-line no-console
         console.log(`Merkle Tree Construction: ${hashesPerSec.toFixed(2)} hashes/sec over ${iterations} iterations`);
         
         expect(hashesPerSec).toBeGreaterThanOrEqual(15000);
@@ -65,6 +65,7 @@ describe('MerkleWasm Benchmark', () => {
         const proof = wasm.generateProof(rootPtr, 500);
         const proofEnd = performance.now();
         
+        // eslint-disable-next-line no-console
         console.log(`Proof generation took ${(proofEnd - proofStart).toFixed(2)} ms`);
         expect(proofEnd - proofStart).toBeLessThan(70);
 

@@ -1,17 +1,17 @@
 import { MerkleWasm } from './merkleWasm';
 
 // Fallback JS implementation (stubbed for brevity as per instructions, only replacing actual usage)
-function jsBuildTree(leaves: Uint8Array): { root: Uint8Array, rootPtr: number } {
+function jsBuildTree(_leaves: Uint8Array): { root: Uint8Array, rootPtr: number } {
     console.warn('Using JS fallback for Merkle tree construction');
     // Implement standard JS Merkle Tree if WASM completely fails
     return { root: new Uint8Array(32), rootPtr: 0 };
 }
 
-function jsGenerateProof(leafIndex: number): Uint8Array {
+function jsGenerateProof(_leafIndex: number): Uint8Array {
     return new Uint8Array(0);
 }
 
-function jsVerifyProof(root: Uint8Array, proof: Uint8Array, leafData: Uint8Array): boolean {
+function jsVerifyProof(_root: Uint8Array, _proof: Uint8Array, _leafData: Uint8Array): boolean {
     return false;
 }
 

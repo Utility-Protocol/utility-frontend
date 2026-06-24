@@ -12,6 +12,7 @@ export class MerkleWasm {
 
     private get exports() {
         if (!this.instance) throw new Error('WASM not initialized');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.instance.exports as any;
     }
 
