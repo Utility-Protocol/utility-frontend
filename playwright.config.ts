@@ -26,4 +26,12 @@ export default defineConfig({
     reuseExistingServer: !!process.env.CI,
     timeout: 120_000,
   },
+  // Only list chromium as an explicit project since CI only installs chromium.
+  // webkit is available for local testing: install with `npx playwright install webkit`.
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
 });
