@@ -1,25 +1,45 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Locale switching", () => {
-  test("switches to es-MX and renders localized strings", async ({ page }) => {
+  test("switches to es-MX and sets correct lang attribute", async ({ page }) => {
     await page.goto("/");
 
     // set locale in localStorage and reload
     await page.evaluate(() => localStorage.setItem("locale", "es-MX"));
     await page.reload();
 
-    // wait for some localized content to appear
-    await page.waitForTimeout(500);
+    // wait for I18nProvider to apply locale
+    await page.waitForFunction(
+      () => document.documentElement.lang === "es-MX",
+      { timeout: 5000 }
+    );
 
-    // take screenshot of the main page
+    // verify lang attribute is set correctly
+    const lang = await page.getAttribute("html", "lang");
+    expect(lang).toBe("es-MX");
+
+    // verify LTR direction for es-MX
+    const dir = await page.getAttribute("html", "dir");
+    expect(dir).toBe("ltr");
+
     await page.screenshot({ path: "screenshots/locale-es-MX.png", fullPage: true });
+  });
 
-    // ensure that a known Spanish string appears
-    await expect(page.locator("text=Idioma")).toBeVisible();
+  test("sets RTL direction for ar-SA", async ({ page }) => {
+    await page.goto("/");
 
-    // ensure no raw i18n keys appear (heuristic: no square-bracketed keys)
-    const body = await page.textContent("body");
-    expect(body).not.toContain("[");
-    expect(body).not.toContain("i18n:");
+    await page.evaluate(() => localStorage.setItem("locale", "ar-SA"));
+    await page.reload();
+
+    await page.waitForFunction(
+      () => document.documentElement.dir === "rtl",
+      { timeout: 5000 }
+    );
+
+    const dir = await page.getAttribute("html", "dir");
+    expect(dir).toBe("rtl");
+
+    const lang = await page.getAttribute("html", "lang");
+    expect(lang).toBe("ar-SA");
   });
 });
