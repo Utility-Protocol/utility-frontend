@@ -1,0 +1,12 @@
+{
+  "app.title": "لوحة Utility Protocol — شبكة DePIN المكانية",
+  "settings.language": "اللغة",
+  "tariff.kwh": "{value, plural, zero {0 كيلو واط ساعي} one {# كيلو واط ساعي} two {# كيلو واط ساعي} few {# كيلو واط ساعي} many {# كيلو واط ساعي} other {# كيلو واط ساعي}}",
+  "meter.status.online": "متصل",
+  "meter.status.offline": "غير متصل",
+  "error.network": "خطأ في الشبكة. حاول مرة أخرى.",
+  "compliance.notice": "هذا الجهاز يتوافق مع اللوائح المحلية.",
+  "date.short": "{ts, date, short}",
+  "currency.default": "SAR",
+  "meter.readings": "{count, plural, zero {لا قراءات} one {# قراءة} two {# قراءتان} few {# قراءات} many {# قراءة} other {# قراءة}}"
+}

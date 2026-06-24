@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { WalletProvider } from "@/components/providers/WalletProvider";
 import { ServiceWorkerProvider } from "@/components/providers/ServiceWorkerProvider";
+import { I18nProvider } from "@/i18n/I18nProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,7 +46,9 @@ export default function RootLayout({
       <body className="min-h-screen bg-background text-foreground">
         <ServiceWorkerProvider>
           <ThemeProvider>
-            <WalletProvider>{children}</WalletProvider>
+            <I18nProvider>
+              <WalletProvider>{children}</WalletProvider>
+            </I18nProvider>
           </ThemeProvider>
         </ServiceWorkerProvider>
       </body>

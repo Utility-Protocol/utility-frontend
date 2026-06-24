@@ -1,0 +1,12 @@
+{
+  "app.title": "公用事业协议 — 空间 DePIN 仪表盘",
+  "settings.language": "语言",
+  "tariff.kwh": "{value, plural, one {# kWh} other {# kWh}}",
+  "meter.status.online": "在线",
+  "meter.status.offline": "离线",
+  "error.network": "网络错误。请重试。",
+  "compliance.notice": "此设备符合当地法规。",
+  "date.short": "{ts, date, short}",
+  "currency.default": "CNY",
+  "meter.readings": "{count, plural, one {# 次读数} other {# 次读数}}"
+}
