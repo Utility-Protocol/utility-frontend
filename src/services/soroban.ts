@@ -31,7 +31,7 @@ export const submitTransaction = async (
   const tx = TransactionBuilder.fromXDR(xdr, getNetworkPassphrase(network));
 
   try {
-    const response = await server.sendTransaction(tx as any);
+    const response = await server.sendTransaction(tx as unknown as import("@stellar/stellar-sdk").Transaction);
     
     if (response.status === "ERROR") {
       const errorStr = JSON.stringify(response);
@@ -40,19 +40,20 @@ export const submitTransaction = async (
         errorStr.includes("txBadSeq") ||
         errorStr.includes("bad_seq")
       ) {
-        const err = new Error("tx_bad_seq");
-        (err as any).code = "tx_bad_seq";
+        const err = new Error("tx_bad_seq") as Error & { code?: string };
+        err.code = "tx_bad_seq";
         throw err;
       }
       throw new Error(`Transaction failed: ${errorStr}`);
     }
     
     return response;
-  } catch (err: any) {
-    const msg = err?.message || "";
+  } catch (err: unknown) {
+    const errorObj = err as { message?: string };
+    const msg = errorObj?.message || "";
     if (msg.includes("tx_bad_seq") || msg.includes("bad_seq")) {
-      const formattedErr = new Error("tx_bad_seq");
-      (formattedErr as any).code = "tx_bad_seq";
+      const formattedErr = new Error("tx_bad_seq") as Error & { code?: string };
+      formattedErr.code = "tx_bad_seq";
       throw formattedErr;
     }
     throw err;

@@ -61,12 +61,12 @@ describe("NonceManager", () => {
       return `XDR-WITH-NONCE-${lease.nonce}`;
     });
 
-    const submitMock = sorobanService.submitWithNonce as any;
+    const submitMock = sorobanService.submitWithNonce as import("vitest").Mock;
     
     // Fail first time with tx_bad_seq, succeed second time
     submitMock.mockImplementationOnce(() => {
-      const err = new Error("tx_bad_seq");
-      (err as any).code = "tx_bad_seq";
+      const err = new Error("tx_bad_seq") as Error & { code?: string };
+      err.code = "tx_bad_seq";
       throw err;
     }).mockImplementationOnce(() => {
       return { status: "SUCCESS" };

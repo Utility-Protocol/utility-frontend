@@ -20,7 +20,7 @@ class NonceManager {
     try {
       const account = await server.getAccount(accountId);
       baseSequence = account.sequenceNumber();
-    } catch (err) {
+    } catch {
       // If account doesn't exist or other error, fallback to 0
       baseSequence = "0";
     }
@@ -151,8 +151,9 @@ class NonceManager {
         }
 
         return response;
-      } catch (err: any) {
-        if (err?.code === "tx_bad_seq") {
+      } catch (err: unknown) {
+        const errorObj = err as { code?: string };
+        if (errorObj?.code === "tx_bad_seq") {
           nonceStore.dispatch({
             type: "NONCE_POOL_EXHAUSTED",
             payload: { accountId, error: "tx_bad_seq" },
