@@ -174,3 +174,116 @@ self.addEventListener("fetch", (event) => {
   }
   // Everything else: let the browser handle it normally
 });
+
+/* ============================================================
+ * Push notification router
+ *   - Foreground client present  → postMessage (in-app toast)
+ *   - Background                  → system Notification, coalesced
+ *     within a 60s window via a shared tag (the coalescence key).
+ * ============================================================ */
+
+const COALESCENCE_BODY_PREFIX = 80;
+const MAX_NOTIFICATION_ACTIONS = 2;
+
+/* Mirror of src/utils/topicRouter.ts coalescenceKey (the SW cannot import it). */
+function coalescenceKey(topic, body) {
+  return `${topic} ${(body || "").slice(0, COALESCENCE_BODY_PREFIX)}`;
+}
+
+async function handlePush(event) {
+  let payload = null;
+  try {
+    payload = event.data ? event.data.json() : null;
+  } catch {
+    payload = null;
+  }
+  if (!payload || typeof payload.topic !== "string") return;
+
+  const { topic, title = "Notification", body = "", data = {}, actions = [] } =
+    payload;
+  const key = coalescenceKey(topic, body);
+
+  const clientList = await self.clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+
+  // Foreground detection: route to the in-app toast queue instead of the OS.
+  const hasVisibleClient = clientList.some(
+    (c) => c.visibilityState === "visible" || c.focused
+  );
+  if (hasVisibleClient) {
+    for (const client of clientList) {
+      client.postMessage({ type: "push-notification", coalescenceKey: key, payload });
+    }
+    return;
+  }
+
+  // Background: coalesce identical events sharing the tag into one notification.
+  const existing = await self.registration.getNotifications({ tag: key });
+  const prevCount =
+    existing.length && existing[0].data ? existing[0].data.count || 1 : 0;
+  const count = prevCount + 1;
+
+  await self.registration.showNotification(
+    count > 1 ? `${title} (${count})` : title,
+    {
+      body,
+      tag: key, // identical tag replaces the prior notification (coalescence)
+      renotify: count > 1,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { ...data, topic, count, actions, coalescenceKey: key },
+      actions: (actions || [])
+        .slice(0, MAX_NOTIFICATION_ACTIONS)
+        .map((a) => ({ action: a.action, title: a.title, icon: a.icon })),
+    }
+  );
+}
+
+self.addEventListener("push", (event) => {
+  event.waitUntil(handlePush(event));
+});
+
+/* ---------- Notification click: route to URL or app route ---------- */
+function resolveTarget(notificationData, actionId) {
+  const actions = (notificationData && notificationData.actions) || [];
+  if (actionId) {
+    const matched = actions.find((a) => a.action === actionId);
+    if (matched) return matched.url || matched.route || "/";
+  }
+  const first = actions[0];
+  return (first && (first.url || first.route)) || "/";
+}
+
+async function openOrFocus(target, payload) {
+  const clientList = await self.clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+  for (const client of clientList) {
+    if ("focus" in client) {
+      await client.focus();
+      client.postMessage({ type: "notification-action", target, payload });
+      return;
+    }
+  }
+  if (self.clients.openWindow) {
+    await self.clients.openWindow(target);
+  }
+}
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const data = event.notification.data || {};
+  const target = resolveTarget(data, event.action);
+  event.waitUntil(openOrFocus(target, data));
+});
+
+/* ---------- Control messages from clients ---------- */
+self.addEventListener("message", (event) => {
+  const msg = event.data;
+  if (msg && msg.type === "skip-waiting") {
+    self.skipWaiting();
+  }
+});
