@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "../styles/breakpoints.css";
+@import "../styles/containers.css";
 
 :root,
 .light {

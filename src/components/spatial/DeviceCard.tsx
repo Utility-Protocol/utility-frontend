@@ -1,26 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
+import { sanitize, validateLabel } from "@/utils/sanitize";
 
 interface DeviceCardProps {
   label: string;
   location: string;
   status: "active" | "inactive" | "alarm";
   metrics?: Record<string, string | number>;
-}
-
-function sanitize(input: string): string {
-  return input
-    .replace(/[<>]/g, "")
-    .replace(/javascript:/gi, "")
-    .replace(/on\w+=/gi, "")
-    .trim();
-}
-
-function validateLabel(raw: string): string {
-  const cleaned = sanitize(raw);
-  if (cleaned.length > 64) return cleaned.slice(0, 64);
-  return cleaned;
 }
 
 export function DeviceCard({ label, location, status, metrics }: DeviceCardProps) {
@@ -53,7 +40,7 @@ export function DeviceCard({ label, location, status, metrics }: DeviceCardProps
           {Object.entries(metrics).map(([key, value]) => (
             <div key={key} className="flex justify-between">
               <span className="text-muted-foreground">{sanitize(key)}</span>
-              <span className="font-mono tabular-nums">{String(value)}</span>
+              <span className="font-mono tabular-nums">{sanitize(String(value))}</span>
             </div>
           ))}
         </div>

@@ -1,0 +1,12 @@
+{
+  "app.title": "Tableau de bord Utility Protocol — DePIN Spatial",
+  "settings.language": "Langue",
+  "tariff.kwh": "{value, plural, one {# kWh} other {# kWh}}",
+  "meter.status.online": "En ligne",
+  "meter.status.offline": "Hors ligne",
+  "error.network": "Erreur réseau. Veuillez réessayer.",
+  "compliance.notice": "Cet appareil est conforme aux réglementations locales.",
+  "date.short": "{ts, date, short}",
+  "currency.default": "EUR",
+  "meter.readings": "{count, plural, one {# lecture} other {# lectures}}"
+}

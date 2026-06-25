@@ -1,0 +1,12 @@
+{
+  "app.title": "ユーティリティプロトコル — 空間DePINダッシュボード",
+  "settings.language": "言語",
+  "tariff.kwh": "{value, plural, one {# kWh} other {# kWh}}",
+  "meter.status.online": "オンライン",
+  "meter.status.offline": "オフライン",
+  "error.network": "ネットワークエラー。再試行してください。",
+  "compliance.notice": "このデバイスは地域の規制に準拠しています。",
+  "date.short": "{ts, date, short}",
+  "currency.default": "JPY",
+  "meter.readings": "{count, plural, one {# 件の読み取り} other {# 件の読み取り}}"
+}

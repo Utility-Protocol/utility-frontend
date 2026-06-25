@@ -11,6 +11,7 @@ import {
 import type { Keypair } from "@stellar/stellar-sdk";
 import { abortAllRequests } from "@/services/api";
 import { cacheClearByPrefix } from "@/services/cache";
+import { nonceManager } from "@/services/nonceManager";
 
 export interface WalletAccount {
   address: string;
@@ -64,6 +65,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     if (oldAddress) {
       await cacheClearByPrefix(`utility:${oldAddress}`);
+      nonceManager.flushAccount(oldAddress);
     }
   }, []);
 
@@ -86,6 +88,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       );
       setAccounts([newAccount]);
       setAccount(newAccount);
+      nonceManager.initialize(newAccount.address, newAccount.network).catch(console.error);
     } finally {
       setIsConnecting(false);
     }
@@ -109,6 +112,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
           "utility-wallet-session",
           JSON.stringify({ address, network: target.network, cacheVersion: cacheVersion.current })
         );
+        nonceManager.initialize(target.address, target.network).catch(console.error);
       });
       await switchGuard;
     },

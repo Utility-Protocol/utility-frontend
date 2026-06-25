@@ -1,0 +1,12 @@
+{
+  "app.title": "Painel Utility Protocol — DePIN Espacial",
+  "settings.language": "Idioma",
+  "tariff.kwh": "{value, plural, one {# kWh} other {# kWh}}",
+  "meter.status.online": "Online",
+  "meter.status.offline": "Offline",
+  "error.network": "Erro de rede. Tente novamente.",
+  "compliance.notice": "Este dispositivo está em conformidade com as regulamentações locais.",
+  "date.short": "{ts, date, short}",
+  "currency.default": "BRL",
+  "meter.readings": "{count, plural, one {# leitura} other {# leituras}}"
+}
