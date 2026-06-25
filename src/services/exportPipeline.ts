@@ -182,7 +182,9 @@ export class ExportPipeline {
     const limit = Math.min(CHUNK_SIZE, this.maxRows - offset);
     return this.fetchFn(this.buildUrl(offset, limit), {
       signal: this.controller.signal,
-      headers: { Accept: "application/x-ndjson", "Accept-Encoding": "gzip" },
+      // The browser manages Accept-Encoding (gzip) itself; setting it here is a
+      // no-op forbidden header, so we only advertise the body type we want.
+      headers: { Accept: "application/x-ndjson" },
     });
   }
 
