@@ -20,6 +20,11 @@ const CORS_HEADERS = {
 };
 
 test.describe("Bulk export", () => {
+  // The app registers a service worker that intercepts fetches. Playwright's
+  // page.route does NOT see service-worker-originated requests, so without this
+  // the mocked endpoints would be bypassed and hit the real (absent) network.
+  test.use({ serviceWorkers: "block" });
+
   test.beforeEach(async ({ page }) => {
     // Force the Blob download fallback: headless Chromium may expose
     // showSaveFilePicker, whose native dialog can never appear and would hang
