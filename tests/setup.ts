@@ -18,6 +18,10 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-});
+// Only patch window.localStorage under a DOM environment (jsdom). Node-env
+// tests (e.g. real-crypto suites) provide their own storage shim if needed.
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock,
+  });
+}
