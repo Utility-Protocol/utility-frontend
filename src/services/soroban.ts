@@ -71,3 +71,22 @@ export const submitWithNonce = async (
   // Successfully consumed. We return the response.
   return response;
 };
+
+/**
+ * Promise-based read of a contract's persistent data entry, suitable for
+ * wrapping in a Suspense resource (see {@link createResource}).
+ */
+export const readContractState = async <T = unknown>(
+  contractId: string,
+  key: string,
+  network: string = "testnet"
+): Promise<T> => {
+  const { rpc, xdr, scValToNative } = await import("@stellar/stellar-sdk");
+  const server = new rpc.Server(getRpcUrl(network));
+  const entry = await server.getContractData(
+    contractId,
+    xdr.ScVal.scvSymbol(key),
+    rpc.Durability.Persistent
+  );
+  return scValToNative(entry.val.contractData().val()) as T;
+};
