@@ -1,0 +1,2 @@
+PLACEHOLDER — the real compiled circuit witness generator (circuit.wasm) is
+produced by `circom` and served from this path. See README.md in this directory.

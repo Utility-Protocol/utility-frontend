@@ -1,0 +1,2 @@
+PLACEHOLDER — the real Groth16 proving key (~150 MB) is CDN-hosted and fetched
+into IndexedDB at runtime. See README.md in this directory.
