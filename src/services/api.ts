@@ -6,6 +6,7 @@ interface ApiConfig {
   baseUrl: string;
   headers: Record<string, string>;
   timeout: number;
+  sensitivePayloadEncryption?: import("./sensitivePayloadEncryption").SensitivePayloadEncryptionOptions;
 }
 
 interface ApiResponse<T = unknown> {
@@ -40,6 +41,18 @@ export function abortAllRequests(): void {
   activeControllers.clear();
 }
 
+async function prepareRequestBody(body: unknown, config: ApiConfig): Promise<unknown> {
+  if (!config.sensitivePayloadEncryption) return body;
+  const { encryptSensitivePayload } = await import("./sensitivePayloadEncryption");
+  const result = await encryptSensitivePayload(body, config.sensitivePayloadEncryption);
+  if (result.encryptedFieldCount > 0) {
+    if (result.durationMs > 100) {
+      console.warn(`Sensitive payload encryption exceeded 100ms target: ${result.durationMs.toFixed(1)}ms`);
+    }
+  }
+  return result.payload;
+}
+
 async function request<T>(
   method: HttpMethod,
   path: string,
@@ -61,7 +74,7 @@ async function request<T>(
     const response = await fetch(url, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: body ? JSON.stringify(await prepareRequestBody(body, cfg)) : undefined,
       signal: controller.signal,
     });
 
