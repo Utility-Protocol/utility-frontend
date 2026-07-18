@@ -7,6 +7,8 @@ import {
   AdaptiveCapacityMonitor,
 } from "@/utils/buffer";
 import { throttle } from "@/utils/helpers";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { capacitySheddingService } from "@/services/capacityShedding";
 
 function generatePoint(): number {
   return 40 + Math.random() * 60;
@@ -17,15 +19,19 @@ function generatePoint(): number {
  *
  * Ingestion and rendering are decoupled: incoming points are accumulated by a
  * {@link StreamBatcher} and flushed into a fixed-capacity {@link RingBuffer}, and
- * the canvas draw loop reads the ring buffer directly each animation frame (no
- * React state on the hot path). An {@link AdaptiveCapacityMonitor} shrinks the
- * retained window when frames run slower than ~30 FPS, so 50+ msg/s bursts no
- * longer saturate the RAF loop.
+ * the canvas draw loop reads the ring buffer directly each animation frame.
+ *
+ * This version is integrated with Feature Flags and Capacity Shedding:
+ * - Measures frame-to-frame intervals (FPS) and reports them to the capacitySheddingService.
+ * - When `highFrequencyTelemetry` flag is disabled, pauses high-frequency canvas drawing,
+ *   bypasses RAF, and degrades gracefully to a static text-based metric display.
  */
 export function LiveDataView() {
+  const { flags } = useFeatureFlags();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 200 });
+  const [lastAverage, setLastAverage] = useState<number>(50);
 
   // Streaming primitives (stable for the component's lifetime).
   const bufferRef = useRef<RingBuffer | null>(null);
@@ -40,8 +46,11 @@ export function LiveDataView() {
   const rafRef = useRef(0);
   const lastFrameRef = useRef(0);
 
-  // Throttle resize updates so a stream of ResizeObserver events can't thrash
-  // React state during a burst.
+  // FPS calculation vars
+  const frameCountRef = useRef(0);
+  const lastFpsReportRef = useRef(0);
+
+  // Throttle resize updates
   const handleResize = useMemo(
     () =>
       throttle((width: number, height: number) => {
@@ -76,6 +85,16 @@ export function LiveDataView() {
 
   // Draw loop: decoupled from ingestion, reads the ring buffer directly.
   useEffect(() => {
+    // If telemetry flag is disabled, we do not run the canvas R.A.F. loop
+    if (!flags.highFrequencyTelemetry) {
+      // Clean up previous animation frame if any
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = 0;
+      }
+      return;
+    }
+
     const buffer = bufferRef.current!;
     const batcher = batcherRef.current!;
     const monitor = monitorRef.current!;
@@ -84,7 +103,22 @@ export function LiveDataView() {
       // Frame-to-frame time drives the adaptive capacity (CPU monitor).
       const dt = lastFrameRef.current ? timestamp - lastFrameRef.current : 0;
       lastFrameRef.current = timestamp;
-      if (dt > 0) buffer.setCapacity(monitor.record(dt));
+      if (dt > 0) {
+        buffer.setCapacity(monitor.record(dt));
+
+        // Periodically report actual FPS to capacitySheddingService
+        frameCountRef.current += 1;
+        if (!lastFpsReportRef.current) {
+          lastFpsReportRef.current = timestamp;
+        } else if (timestamp - lastFpsReportRef.current >= 1000) {
+          const actualFps = Math.round(
+            (frameCountRef.current * 1000) / (timestamp - lastFpsReportRef.current)
+          );
+          capacitySheddingService.updateMetrics({ fps: actualFps });
+          frameCountRef.current = 0;
+          lastFpsReportRef.current = timestamp;
+        }
+      }
 
       batcher.flushDue();
 
@@ -125,6 +159,7 @@ export function LiveDataView() {
         ctx.fillStyle = "var(--foreground)";
         ctx.font = "12px monospace";
         ctx.fillText(`${avg.toFixed(1)}% avg`, 8, 16);
+        setLastAverage(avg);
       }
     };
 
@@ -133,8 +168,32 @@ export function LiveDataView() {
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, []);
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [flags.highFrequencyTelemetry]);
+
+  if (!flags.highFrequencyTelemetry) {
+    return (
+      <div
+        ref={containerRef}
+        className="relative w-full h-[200px] rounded-xl border border-border overflow-hidden bg-muted/20 flex flex-col items-center justify-center p-4 text-center"
+      >
+        <span className="text-sm font-semibold text-amber-500 animate-pulse">
+          Capacity Shedding Active: High-Frequency Canvas Paused
+        </span>
+        <span className="text-xs text-muted-foreground mt-1 max-w-md">
+          Live drawing is suspended to conserve operator system resources. Data stream continues ingestion in the background.
+        </span>
+        <span className="text-xl font-mono font-bold mt-4 text-emerald-500">
+          {lastAverage ? lastAverage.toFixed(1) : "50.0"}% Average
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
