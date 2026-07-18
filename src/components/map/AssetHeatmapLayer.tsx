@@ -1,7 +1,6 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useRef } from 'react';
-import { getTile } from './heatmapStore';
 import { updateBoundary, getAffectedTiles } from './boundaryManager';
 
 interface AssetPosition {
@@ -41,11 +40,12 @@ export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate }: HeatmapP
               heatValues[ty * 256 + tx] += asset.value;
             }
           }
+          onTileUpdate?.(_tileKey, heatValues);
           return heatValues;
         },
       });
     }
-  }, [assets, boundaries]);
+  }, [assets, boundaries, onTileUpdate]);
 
   return <canvas ref={canvasRef} width={800} height={600} />;
 }
