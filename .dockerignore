@@ -1,0 +1,39 @@
+# Dependencies are installed inside Docker for reproducible, cacheable layers.
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Next.js build outputs and caches.
+.next
+out
+
+# Test and local artifacts.
+coverage
+playwright-report
+test-results
+tests/visual/diffs
+tests/visual/results
+visual-report.html
+visual-summary.json
+
+# VCS and editor metadata.
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# Environment files must be provided by the runtime platform.
+.env
+.env.*
+!.env.example
+
+# Documentation and status reports are not needed in the runtime image.
+README.md
+CLAUDE.md
+FINAL_STATUS.md
+IMPLEMENTATION_SUMMARY.md
+TEST_RESULTS.md
+VERIFICATION_REPORT.md

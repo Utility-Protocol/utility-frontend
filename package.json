@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:visual": "npx playwright test tests/visual",
-    "visual:update-baselines": "npx tsx scripts/update-baselines.ts"
+    "visual:update-baselines": "npx tsx scripts/update-baselines.ts",
+    "docker:build": "docker build -t utility-frontend .",
+    "docker:build:plain": "docker build --progress=plain -t utility-frontend ."
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^15.1.0",
