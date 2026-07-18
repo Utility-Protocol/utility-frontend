@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { FleetGrid } from "@/components/spatial/FleetGrid";
 import { useWeb3Auth } from "@/hooks/useWeb3Auth";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { SloMonitoringPanel } from "@/components/dashboard/SloMonitoringPanel";
 
 const GridMapSkeleton = () => (
   <div className="w-full h-[500px] rounded-xl bg-muted animate-pulse flex items-center justify-center border border-border">
@@ -99,6 +100,8 @@ export default function Home() {
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 space-y-8">
+        <SloMonitoringPanel />
+
         <section>
           <h2 className="text-lg font-semibold mb-4">Grid Network</h2>
           <Suspense fallback={<GridMapSkeleton />}>
