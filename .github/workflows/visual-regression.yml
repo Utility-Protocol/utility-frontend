@@ -8,6 +8,14 @@ on:
       - "tests/visual/**"
       - ".github/workflows/visual-regression.yml"
 
+concurrency:
+  group: visual-regression-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   NODE_VERSION: 20
 
@@ -15,6 +23,7 @@ jobs:
   visual-regression:
     name: Visual Regression Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +51,7 @@ jobs:
 
       - name: Run visual regression tests
         id: visual
-        run: npx playwright test --config=playwright.visual.config.ts
+        run: npx playwright test --config=playwright.visual.config.ts --workers=50%
         continue-on-error: true
 
       - name: Generate visual report
