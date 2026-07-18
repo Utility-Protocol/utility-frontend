@@ -100,6 +100,8 @@ export default function Home() {
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 space-y-8">
+        <SloMonitoringPanel />
+
         <section>
           <h2 className="text-lg font-semibold mb-4">Grid Network</h2>
           <Suspense fallback={<GridMapSkeleton />}>
