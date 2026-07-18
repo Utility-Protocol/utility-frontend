@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:visual": "npx playwright test tests/visual",
-    "visual:update-baselines": "npx tsx scripts/update-baselines.ts"
+    "visual:update-baselines": "npx tsx scripts/update-baselines.ts",
+    "prepare": "git config core.hooksPath .githooks",
+    "precommit:check": "node scripts/pre-commit.mjs"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^15.1.0",
