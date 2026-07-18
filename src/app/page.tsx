@@ -112,6 +112,8 @@ export default function Home() {
           <FleetGrid />
         </section>
 
+        <DisasterRecoveryPanel />
+
         <section>
           <h2 className="text-lg font-semibold mb-4">Live Telemetry</h2>
           <Suspense fallback={<LiveDataViewSkeleton />}>
