@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { FleetGrid } from "@/components/spatial/FleetGrid";
 import { useWeb3Auth } from "@/hooks/useWeb3Auth";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { DisasterRecoveryPanel } from "@/components/dashboard/DisasterRecoveryPanel";
 
 const GridMapSkeleton = () => (
   <div className="w-full h-[500px] rounded-xl bg-muted animate-pulse flex items-center justify-center border border-border">
@@ -110,6 +111,8 @@ export default function Home() {
           <h2 className="text-lg font-semibold mb-4">Fleet Overview</h2>
           <FleetGrid />
         </section>
+
+        <DisasterRecoveryPanel />
 
         <section>
           <h2 className="text-lg font-semibold mb-4">Live Telemetry</h2>
