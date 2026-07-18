@@ -1,5 +1,7 @@
 "use client";
 
+import { logger } from "@/utils/telemetry/structuredLogger";
+
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface ApiConfig {
@@ -51,6 +53,7 @@ async function request<T>(
   const controller = new AbortController();
   activeControllers.add(controller);
   const timeoutId = setTimeout(() => controller.abort(), cfg.timeout);
+  const startedAt = performance.now();
 
   try {
     const headers: Record<string, string> = { ...cfg.headers };
@@ -73,6 +76,8 @@ async function request<T>(
       data = (await response.json()) as T;
     }
 
+    logApiRequest(method, path, response.status, startedAt);
+
     if (!response.ok) {
       return {
         data: null,
@@ -85,8 +90,10 @@ async function request<T>(
   } catch (err) {
     clearTimeout(timeoutId);
     if ((err as Error).name === "AbortError") {
+      logApiRequest(method, path, 0, startedAt, "Request timed out");
       return { data: null, error: "Request timed out", status: 0 };
     }
+    logApiRequest(method, path, 0, startedAt, (err as Error).message || "Network error");
     return {
       data: null,
       error: (err as Error).message || "Network error",
@@ -109,3 +116,23 @@ export const api = {
   delete: <T>(path: string, config?: Partial<ApiConfig>) =>
     request<T>("DELETE", path, undefined, config),
 };
+
+function logApiRequest(
+  method: HttpMethod,
+  path: string,
+  status: number,
+  startedAt: number,
+  errorMessage?: string
+): void {
+  const durationMs = Math.round(performance.now() - startedAt);
+  const severityText = errorMessage || status >= 500 ? "ERROR" : status >= 400 ? "WARN" : "INFO";
+
+  logger[severityText.toLowerCase() as "info" | "warn" | "error"]("API request completed", {
+    "http.request.method": method,
+    "http.response.status_code": status,
+    "url.path": path,
+    "duration.ms": durationMs,
+    "error.message": errorMessage,
+    "event.name": "api.request",
+  });
+}
