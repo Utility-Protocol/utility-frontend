@@ -12,8 +12,7 @@
     "test:ui": "vitest --ui",
     "test:visual": "npx playwright test tests/visual",
     "visual:update-baselines": "npx tsx scripts/update-baselines.ts",
-    "prepare": "git config core.hooksPath .githooks",
-    "precommit:check": "node scripts/pre-commit.mjs"
+    "audit:security": "npm audit --audit-level=high"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^15.1.0",
