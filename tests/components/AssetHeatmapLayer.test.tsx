@@ -42,16 +42,16 @@ describe('boundaryManager', () => {
     const tiles = getAffectedTiles('flood_zone', {
       minX: 0, minY: 0, maxX: 300, maxY: 300,
     });
-    expect(tiles).toContain('flood_zone:0:0');
-    expect(tiles).toContain('flood_zone:1:0');
-    expect(tiles).toContain('flood_zone:0:1');
-    expect(tiles).toContain('flood_zone:1:1');
+    expect(tiles).toContain('flood_zone::0,0');
+    expect(tiles).toContain('flood_zone::1,0');
+    expect(tiles).toContain('flood_zone::0,1');
+    expect(tiles).toContain('flood_zone::1,1');
   });
 
   it('handles single-tile region', () => {
     const tiles = getAffectedTiles('grid_region', {
       minX: 0, minY: 0, maxX: 100, maxY: 100,
     });
-    expect(tiles).toEqual(['grid_region:0:0']);
+    expect(tiles).toEqual(['grid_region::0,0']);
   });
 });

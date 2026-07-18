@@ -1,5 +1,7 @@
 "use client";
 
+import { getTracer, propagator } from "@/utils/telemetry/tracing";
+
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface ApiConfig {
@@ -52,11 +54,22 @@ async function request<T>(
   activeControllers.add(controller);
   const timeoutId = setTimeout(() => controller.abort(), cfg.timeout);
 
+  const tracer = getTracer();
+  const span = tracer.startSpan(`HTTP ${method}`);
+  span.setAttributes({
+    "http.method": method,
+    "http.url": url,
+    "http.target": path,
+  });
+
   try {
     const headers: Record<string, string> = { ...cfg.headers };
     if (sessionToken) {
       headers["Authorization"] = `Bearer ${sessionToken}`;
     }
+
+    // Inject W3C Trace Context
+    propagator.inject(span.context, headers);
 
     const response = await fetch(url, {
       method,
@@ -67,6 +80,8 @@ async function request<T>(
 
     clearTimeout(timeoutId);
 
+    span.setAttribute("http.status_code", response.status);
+
     let data: T | null = null;
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
@@ -74,6 +89,10 @@ async function request<T>(
     }
 
     if (!response.ok) {
+      span.setStatus({
+        code: "ERROR",
+        message: `HTTP ${response.status}: ${response.statusText}`,
+      });
       return {
         data: null,
         error: `HTTP ${response.status}: ${response.statusText}`,
@@ -81,10 +100,13 @@ async function request<T>(
       };
     }
 
+    span.setStatus("OK");
     return { data, error: null, status: response.status };
   } catch (err) {
     clearTimeout(timeoutId);
+    span.recordException(err as Error);
     if ((err as Error).name === "AbortError") {
+      span.setAttribute("http.status_code", 0);
       return { data: null, error: "Request timed out", status: 0 };
     }
     return {
@@ -94,6 +116,7 @@ async function request<T>(
     };
   } finally {
     activeControllers.delete(controller);
+    span.end();
   }
 }
 
