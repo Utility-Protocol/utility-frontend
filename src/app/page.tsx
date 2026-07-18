@@ -100,6 +100,8 @@ export default function Home() {
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 space-y-8">
+        <SloMonitoringPanel />
+
         <section>
           <GracefulDegradationDashboard />
         </section>
@@ -116,11 +118,18 @@ export default function Home() {
           <FleetGrid />
         </section>
 
+        <DisasterRecoveryPanel />
+
         <section>
           <h2 className="text-lg font-semibold mb-4">Live Telemetry</h2>
           <Suspense fallback={<LiveDataViewSkeleton />}>
             <LiveDataView />
           </Suspense>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-4">Runtime Configuration</h2>
+          <RuntimeConfigAuditPanel />
         </section>
 
         <section>

@@ -1,4 +1,4 @@
-﻿import { acquireTileLock, writeTile, getTileGeneration } from './heatmapStore';
+import { acquireTileLock, writeTile, getTileGeneration } from './heatmapStore';
 
 interface Boundary {
   id: string;

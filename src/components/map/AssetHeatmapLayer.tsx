@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useRef } from 'react';
 import { updateBoundary, getAffectedTiles } from './boundaryManager';
@@ -31,7 +31,7 @@ export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate: _onTileUpd
         id: boundary.id,
         layer: boundary.layer,
         tiles,
-        updateFn: async (_tileKey: string) => {
+        updateFn: async (tileKey: string) => {
           const heatValues = new Float32Array(256 * 256);
           for (const asset of assets) {
             const tx = Math.floor((asset.lng - boundary.region.minX) / (boundary.region.maxX - boundary.region.minX) * 256);
@@ -40,11 +40,12 @@ export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate: _onTileUpd
               heatValues[ty * 256 + tx] += asset.value;
             }
           }
+          onTileUpdate?.(tileKey, heatValues);
           return heatValues;
         },
       });
     }
-  }, [assets, boundaries]);
+  }, [assets, boundaries, onTileUpdate]);
 
   return <canvas ref={canvasRef} width={800} height={600} />;
 }
