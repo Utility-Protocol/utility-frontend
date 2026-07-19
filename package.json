@@ -12,6 +12,7 @@
     "test:ui": "vitest --ui",
     "test:visual": "npx playwright test tests/visual",
     "visual:update-baselines": "npx tsx scripts/update-baselines.ts",
+    "perf:check": "tsx scripts/check-performance-regression.ts",
     "audit:security": "npm audit --audit-level=high"
   },
   "dependencies": {
