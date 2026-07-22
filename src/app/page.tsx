@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { FleetGrid } from "@/components/spatial/FleetGrid";
 import { useWeb3Auth } from "@/hooks/useWeb3Auth";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { RuntimeConfigAuditPanel } from "@/components/ops/RuntimeConfigAuditPanel";
+import { GracefulDegradationDashboard } from "@/components/dashboard/GracefulDegradationDashboard";
 
 const GridMapSkeleton = () => (
   <div className="w-full h-[500px] rounded-xl bg-muted animate-pulse flex items-center justify-center border border-border">
@@ -101,6 +101,10 @@ export default function Home() {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 space-y-8">
         <SloMonitoringPanel />
+
+        <section>
+          <GracefulDegradationDashboard />
+        </section>
 
         <section>
           <h2 className="text-lg font-semibold mb-4">Grid Network</h2>

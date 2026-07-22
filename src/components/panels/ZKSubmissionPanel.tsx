@@ -7,6 +7,7 @@ import {
   useZKSubmission,
   type UseZKSubmissionOptions,
 } from "@/hooks/useZKSubmission";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 /**
  * UI panel for submitting an encrypted meter reading together with a Groth16
@@ -55,6 +56,7 @@ export function ZKSubmissionPanel({
   buildContext,
   ...options
 }: ZKSubmissionPanelProps) {
+  const { flags } = useFeatureFlags();
   const { state, submit, cancel, reset } = useZKSubmission({
     ...options,
     buildContext,
@@ -80,7 +82,11 @@ export function ZKSubmissionPanel({
   }, [consumption]);
 
   const canSubmit =
-    !busy && meterId.trim() !== "" && consumption !== "" && !consumptionError;
+    !busy &&
+    meterId.trim() !== "" &&
+    consumption !== "" &&
+    !consumptionError &&
+    flags.heavyWeightTasks;
 
   const handleSubmit = () => {
     const reading: MeterReading = {
@@ -103,6 +109,12 @@ export function ZKSubmissionPanel({
           the value or meter identity.
         </p>
       </div>
+
+      {!flags.heavyWeightTasks && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-500 animate-pulse">
+          ⚠️ <strong>Capacity Shedding Active:</strong> Proving tasks are temporarily disabled. range proof generations (Groth16 ZK) are disabled to protect system P99 response times.
+        </div>
+      )}
 
       {/* Input form */}
       <div className="grid gap-4 sm:grid-cols-2">

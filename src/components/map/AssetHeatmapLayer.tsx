@@ -20,7 +20,7 @@ interface HeatmapProps {
   onTileUpdate?: (tileKey: string, data: Float32Array) => void;
 }
 
-export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate }: HeatmapProps) {
+export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate: _onTileUpdate }: HeatmapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
