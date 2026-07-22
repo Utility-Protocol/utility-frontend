@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: utility-frontend
+  labels:
+    istio-injection: enabled
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default-strict-mtls
+  namespace: utility-frontend
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-ingress-gateway-to-frontend
+  namespace: utility-frontend
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: utility-frontend
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
+      to:
+        - operation:
+            methods: ["GET", "POST", "HEAD"]
+            ports: ["3000"]
+---
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: frontend-request-security-telemetry
+  namespace: utility-frontend
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: utility-frontend
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - match:
+            metric: REQUEST_DURATION
+          tagOverrides:
+            security_policy:
+              value: '"strict-mtls"'
+            workload:
+              value: '"utility-frontend"'
+  accessLogging:
+    - providers:
+        - name: envoy
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: utility-frontend-mtls
+  namespace: utility-frontend
+spec:
+  host: utility-frontend.utility-frontend.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+    connectionPool:
+      tcp:
+        maxConnections: 1024
+      http:
+        http2MaxRequests: 4096
+        maxRequestsPerConnection: 256
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 10s
+      baseEjectionTime: 30s
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: utility-frontend-blue-green-canary
+  namespace: utility-frontend
+spec:
+  hosts:
+    - utility.example.com
+  gateways:
+    - istio-system/public-gateway
+  http:
+    - name: primary
+      route:
+        - destination:
+            host: utility-frontend.utility-frontend.svc.cluster.local
+            subset: blue
+          weight: 95
+        - destination:
+            host: utility-frontend.utility-frontend.svc.cluster.local
+            subset: green
+          weight: 5
