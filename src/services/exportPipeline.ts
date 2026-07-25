@@ -31,6 +31,7 @@ import {
   type CreateFileWriterOptions,
   type FileWriter,
 } from "@/utils/fileWriter";
+import { getTracer } from "@/utils/telemetry/tracing";
 
 /** Injectable dependencies, primarily for testing. */
 export interface ExportPipelineDeps {
@@ -263,117 +264,132 @@ export class ExportPipeline {
 
   /** Run the export end to end. Resolves when the file is fully written. */
   async run(): Promise<void> {
-    const meta = FORMAT_META[this.config.format];
-    const baseName = this.config.fileName ?? "resource-export";
-
-    this.writer = await this.createWriter({
-      fileName: `${baseName}${meta.extension}`,
-      mimeType: meta.mimeType,
-      description: meta.description,
-      extensions: [meta.extension],
-      onWarning: (message) => this.emit({ type: "warning", message }),
+    const tracer = getTracer();
+    const span = tracer.startSpan("ExportPipeline.run");
+    span.setAttributes({
+      "export.format": this.config.format,
+      "export.columns": this.config.columns.join(","),
+      "export.max_rows": this.maxRows,
     });
 
-    if (this.config.format === "geojson") {
-      await this.enqueue('{"type":"FeatureCollection","features":[');
-    }
+    return tracer.withSpanAsync(span, async () => {
+      const meta = FORMAT_META[this.config.format];
+      const baseName = this.config.fileName ?? "resource-export";
 
-    const filters = this.config.filters ?? [];
-    const inflight = new Map<number, Promise<Response>>();
-    let nextToFetch = 0;
-    let ended = false;
+      this.writer = await this.createWriter({
+        fileName: `${baseName}${meta.extension}`,
+        mimeType: meta.mimeType,
+        description: meta.description,
+        extensions: [meta.extension],
+        onWarning: (message) => this.emit({ type: "warning", message }),
+      });
 
-    const prime = () => {
-      while (
-        inflight.size < PREFETCH_WINDOW &&
-        nextToFetch < this.totalChunks &&
-        !ended
-      ) {
-        inflight.set(nextToFetch, this.fetchChunk(nextToFetch));
-        nextToFetch += 1;
+      if (this.config.format === "geojson") {
+        await this.enqueue('{"type":"FeatureCollection","features":[');
       }
-    };
 
-    try {
-      prime();
+      const filters = this.config.filters ?? [];
+      const inflight = new Map<number, Promise<Response>>();
+      let nextToFetch = 0;
+      let ended = false;
 
-      for (let chunk = 0; chunk < this.totalChunks && !ended; chunk++) {
-        if (this.cancelled) break;
-        const responsePromise = inflight.get(chunk);
-        inflight.delete(chunk);
-        if (!responsePromise) break;
-
-        this.emit({
-          type: "chunkStart",
-          chunk,
-          totalChunks: this.totalChunks,
-        });
-
-        const response = await responsePromise;
-        if (!response.ok) {
-          throw new Error(`Export chunk ${chunk} failed: HTTP ${response.status}`);
+      const prime = () => {
+        while (
+          inflight.size < PREFETCH_WINDOW &&
+          nextToFetch < this.totalChunks &&
+          !ended
+        ) {
+          inflight.set(nextToFetch, this.fetchChunk(nextToFetch));
+          nextToFetch += 1;
         }
-        if (!response.body) {
-          ended = true;
-          break;
-        }
+      };
 
-        let rowsInChunk = 0;
-        const gzip = (response.headers.get("content-encoding") ?? "").includes(
-          "gzip"
-        );
-        for await (const row of parseNdjsonStream(response.body, {
-          gzip,
-          signal: this.controller.signal,
-          onBytes: (n) => {
-            this.bytesDownloaded += n;
-          },
-        })) {
-          rowsInChunk += 1;
-          if (filters.length && !matchesFilters(row, filters)) continue;
-          if (this.rowsWritten >= this.maxRows) {
+      try {
+        prime();
+
+        for (let chunk = 0; chunk < this.totalChunks && !ended; chunk++) {
+          if (this.cancelled) break;
+          const responsePromise = inflight.get(chunk);
+          inflight.delete(chunk);
+          if (!responsePromise) break;
+
+          this.emit({
+            type: "chunkStart",
+            chunk,
+            totalChunks: this.totalChunks,
+          });
+
+          const response = await responsePromise;
+          if (!response.ok) {
+            throw new Error(`Export chunk ${chunk} failed: HTTP ${response.status}`);
+          }
+          if (!response.body) {
             ended = true;
             break;
           }
-          await this.writeRow(row);
+
+          let rowsInChunk = 0;
+          const gzip = (response.headers.get("content-encoding") ?? "").includes(
+            "gzip"
+          );
+          for await (const row of parseNdjsonStream(response.body, {
+            gzip,
+            signal: this.controller.signal,
+            onBytes: (n) => {
+              this.bytesDownloaded += n;
+            },
+          })) {
+            rowsInChunk += 1;
+            if (filters.length && !matchesFilters(row, filters)) continue;
+            if (this.rowsWritten >= this.maxRows) {
+              ended = true;
+              break;
+            }
+            await this.writeRow(row);
+          }
+
+          this.emit({
+            type: "chunkComplete",
+            chunk,
+            rowsWritten: this.rowsWritten,
+            bytesDownloaded: this.bytesDownloaded,
+            bytesWritten: this.bytesWritten + this.bufferBytes,
+          });
+
+          // A short chunk means the dataset is exhausted.
+          if (rowsInChunk < CHUNK_SIZE) ended = true;
+          if (!ended) prime();
         }
 
+        if (this.cancelled) {
+          await this.abortWriter(inflight);
+          this.emit({ type: "cancelled" });
+          span.setStatus({ code: "OK", message: "cancelled" });
+          return;
+        }
+
+        await this.finalize(baseName);
+        await this.drain(inflight);
+
         this.emit({
-          type: "chunkComplete",
-          chunk,
+          type: "complete",
           rowsWritten: this.rowsWritten,
-          bytesDownloaded: this.bytesDownloaded,
-          bytesWritten: this.bytesWritten + this.bufferBytes,
+          bytesWritten: this.bytesWritten,
         });
-
-        // A short chunk means the dataset is exhausted.
-        if (rowsInChunk < CHUNK_SIZE) ended = true;
-        if (!ended) prime();
-      }
-
-      if (this.cancelled) {
+        span.setStatus("OK");
+      } catch (err) {
+        span.recordException(err as Error);
         await this.abortWriter(inflight);
-        this.emit({ type: "cancelled" });
-        return;
+        if ((err as Error)?.name === "AbortError" || this.cancelled) {
+          this.emit({ type: "cancelled" });
+          return;
+        }
+        this.emit({ type: "error", message: (err as Error).message });
+        throw err;
+      } finally {
+        span.end();
       }
-
-      await this.finalize(baseName);
-      await this.drain(inflight);
-
-      this.emit({
-        type: "complete",
-        rowsWritten: this.rowsWritten,
-        bytesWritten: this.bytesWritten,
-      });
-    } catch (err) {
-      await this.abortWriter(inflight);
-      if ((err as Error)?.name === "AbortError" || this.cancelled) {
-        this.emit({ type: "cancelled" });
-        return;
-      }
-      this.emit({ type: "error", message: (err as Error).message });
-      throw err;
-    }
+    });
   }
 
   private async finalize(baseName: string): Promise<void> {
