@@ -2,7 +2,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, bootstrap your local development environment:
+
+```bash
+npm run setup:dev
+```
+
+The setup script verifies Node.js and npm, creates a local `.env.local` from `.env.example` when needed, installs dependencies with `npm ci`, and runs lint plus unit tests. Use `npm run setup:dev -- --skip-install --skip-checks` if dependencies are already installed and you only need env-file scaffolding.
+
+Then, run the development server:
 
 ```bash
 npm run dev
