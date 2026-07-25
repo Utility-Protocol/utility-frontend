@@ -66,6 +66,7 @@ async function request<T>(
   const controller = new AbortController();
   activeControllers.add(controller);
   const timeoutId = setTimeout(() => controller.abort(), cfg.timeout);
+  const startedAt = performance.now();
 
   const tracer = getTracer();
   const span = tracer.startSpan(`HTTP ${method}`);
@@ -101,6 +102,8 @@ async function request<T>(
       data = (await response.json()) as T;
     }
 
+    logApiRequest(method, path, response.status, startedAt);
+
     if (!response.ok) {
       span.setStatus({
         code: "ERROR",
@@ -122,6 +125,7 @@ async function request<T>(
       span.setAttribute("http.status_code", 0);
       return { data: null, error: "Request timed out", status: 0 };
     }
+    logApiRequest(method, path, 0, startedAt, (err as Error).message || "Network error");
     return {
       data: null,
       error: (err as Error).message || "Network error",
@@ -145,3 +149,23 @@ export const api = {
   delete: <T>(path: string, config?: Partial<ApiConfig>) =>
     request<T>("DELETE", path, undefined, config),
 };
+
+function logApiRequest(
+  method: HttpMethod,
+  path: string,
+  status: number,
+  startedAt: number,
+  errorMessage?: string
+): void {
+  const durationMs = Math.round(performance.now() - startedAt);
+  const severityText = errorMessage || status >= 500 ? "ERROR" : status >= 400 ? "WARN" : "INFO";
+
+  logger[severityText.toLowerCase() as "info" | "warn" | "error"]("API request completed", {
+    "http.request.method": method,
+    "http.response.status_code": status,
+    "url.path": path,
+    "duration.ms": durationMs,
+    "error.message": errorMessage,
+    "event.name": "api.request",
+  });
+}
