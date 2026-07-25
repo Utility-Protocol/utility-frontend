@@ -8,6 +8,7 @@ import type {
   FilterOperator,
   SchemaColumn,
 } from "@/types/export";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { MAX_ROWS } from "@/types/export";
 import {
   useExportProgress,
@@ -58,6 +59,7 @@ export function ExportDialog({
   progress: progressOverride,
   baseUrl,
 }: ExportDialogProps) {
+  const { flags } = useFeatureFlags();
   const resolvedBaseUrl =
     baseUrl ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
@@ -176,6 +178,12 @@ export function ExportDialog({
         {schemaError && (
           <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-500">
             Could not load column schema: {schemaError}
+          </div>
+        )}
+
+        {!flags.heavyWeightTasks && (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-500 animate-pulse">
+            ⚠️ <strong>Capacity Shedding Active:</strong> Bulk exporting is temporarily suspended to guarantee low latency on critical operator tasks.
           </div>
         )}
 
@@ -352,7 +360,7 @@ export function ExportDialog({
               </button>
               <button
                 onClick={handleExport}
-                disabled={selectedColumns.length === 0}
+                disabled={selectedColumns.length === 0 || !flags.heavyWeightTasks}
                 className="rounded-lg bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Export

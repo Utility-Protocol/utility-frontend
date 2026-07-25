@@ -12,6 +12,7 @@ import {
   type RangeProof,
 } from "@/types/reserve";
 import { bytesToHex, hexToBytes, sha256 } from "@/utils/porMerkle";
+import { getTracer } from "@/utils/telemetry/tracing";
 
 /**
  * Proof-of-Reserve orchestrator. Reads the on-chain Merkle/liability commitment
@@ -205,54 +206,73 @@ export async function runProofOfReserve(
   deps: ProofOfReserveDeps = {},
   onProgress: ProgressFn = () => {}
 ): Promise<ProofOfReserveOutcome> {
-  const network = config.network ?? "testnet";
-  const fetchCommitment = deps.fetchCommitment ?? defaultFetchCommitment;
-  const fetchAudit = makeFetchAudit(deps);
-  const prove =
-    deps.prove ??
-    ((inputs: ProofInputs) =>
-      proveWithWorker(inputs, {
-        wasmUrl: deps.wasmUrl ?? "/wasm/bulletproofs.wasm",
-        wasmIntegrity: deps.wasmIntegrity,
-      }));
+  const tracer = getTracer();
+  const span = tracer.startSpan("runProofOfReserve");
+  span.setAttributes({
+    "por.contract_id": config.contractId,
+    "por.from": config.from,
+    "por.to": config.to,
+    "por.network": config.network ?? "testnet",
+  });
 
-  // 1. Fetch on-chain commitment and off-chain inventory.
-  onProgress("fetching", 10);
-  const [commitment, inventory] = await Promise.all([
-    fetchCommitment(config.contractId, network),
-    fetchAudit(config.from, config.to, network),
-  ]);
-  onProgress("fetching", 25);
+  return tracer.withSpanAsync(span, async () => {
+    try {
+      const network = config.network ?? "testnet";
+      const fetchCommitment = deps.fetchCommitment ?? defaultFetchCommitment;
+      const fetchAudit = makeFetchAudit(deps);
+      const prove =
+        deps.prove ??
+        ((inputs: ProofInputs) =>
+          proveWithWorker(inputs, {
+            wasmUrl: deps.wasmUrl ?? "/wasm/bulletproofs.wasm",
+            wasmIntegrity: deps.wasmIntegrity,
+          }));
 
-  // 2. Solvency gate.
-  const auditTotal = aggregateAudit(inventory);
-  const liability = BigInt(commitment.totalLiability);
-  const insolvency = checkSolvency(liability, auditTotal);
-  if (insolvency) throw new InsolvencyError(insolvency);
+      // 1. Fetch on-chain commitment and off-chain inventory.
+      onProgress("fetching", 10);
+      const [commitment, inventory] = await Promise.all([
+        fetchCommitment(config.contractId, network),
+        fetchAudit(config.from, config.to, network),
+      ]);
+      onProgress("fetching", 25);
 
-  // 3. Prove the surplus is in range.
-  const inputs = buildProofInputs(commitment, auditTotal);
-  onProgress("proving", 50);
-  const proof = await prove(inputs);
+      // 2. Solvency gate.
+      const auditTotal = aggregateAudit(inventory);
+      const liability = BigInt(commitment.totalLiability);
+      const insolvency = checkSolvency(liability, auditTotal);
+      if (insolvency) throw new InsolvencyError(insolvency);
 
-  // 4. Attest on-chain (optional).
-  const attestationHash = await attestationHashOf(proof);
-  onProgress("submitting", 75);
-  let ledger: number | null = null;
-  if (deps.submitAttestation) {
-    ({ ledger } = await deps.submitAttestation(proof, attestationHash, config));
-  }
+      // 3. Prove the surplus is in range.
+      const inputs = buildProofInputs(commitment, auditTotal);
+      onProgress("proving", 50);
+      const proof = await prove(inputs);
 
-  onProgress("confirmed", 100);
-  return {
-    proof,
-    commitment,
-    auditTotal: auditTotal.toString(),
-    result: {
-      attestationHash,
-      ledger,
-      commitment: proof.commitment,
-      provedAt: Date.now(),
-    },
-  };
+      // 4. Attest on-chain (optional).
+      const attestationHash = await attestationHashOf(proof);
+      onProgress("submitting", 75);
+      let ledger: number | null = null;
+      if (deps.submitAttestation) {
+        ({ ledger } = await deps.submitAttestation(proof, attestationHash, config));
+      }
+
+      onProgress("confirmed", 100);
+      span.setStatus("OK");
+      return {
+        proof,
+        commitment,
+        auditTotal: auditTotal.toString(),
+        result: {
+          attestationHash,
+          ledger,
+          commitment: proof.commitment,
+          provedAt: Date.now(),
+        },
+      };
+    } catch (err) {
+      span.recordException(err as Error);
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
 }

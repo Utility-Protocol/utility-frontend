@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:visual": "npx playwright test tests/visual",
-    "visual:update-baselines": "npx tsx scripts/update-baselines.ts"
+    "visual:update-baselines": "npx tsx scripts/update-baselines.ts",
+    "audit:security": "npm audit --audit-level=high"
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^15.1.0",

@@ -1,4 +1,4 @@
-﻿import { acquireTileLock, writeTile, getTileGeneration } from './heatmapStore';
+import { acquireTileLock, writeTile, getTileGeneration } from './heatmapStore';
 
 interface Boundary {
   id: string;
@@ -45,7 +45,7 @@ export function getAffectedTiles(
 
   for (let x = startX; x <= endX; x++) {
     for (let y = startY; y <= endY; y++) {
-      tiles.push(layer + '::' + x + ',' + y);
+      tiles.push(layer + ':' + x + ':' + y);
     }
   }
   return tiles;

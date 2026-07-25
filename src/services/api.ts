@@ -1,6 +1,6 @@
 "use client";
 
-import { logger } from "@/utils/telemetry/structuredLogger";
+import { getTracer, propagator } from "@/utils/telemetry/tracing";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -8,6 +8,7 @@ interface ApiConfig {
   baseUrl: string;
   headers: Record<string, string>;
   timeout: number;
+  sensitivePayloadEncryption?: import("./sensitivePayloadEncryption").SensitivePayloadEncryptionOptions;
 }
 
 interface ApiResponse<T = unknown> {
@@ -42,6 +43,18 @@ export function abortAllRequests(): void {
   activeControllers.clear();
 }
 
+async function prepareRequestBody(body: unknown, config: ApiConfig): Promise<unknown> {
+  if (!config.sensitivePayloadEncryption) return body;
+  const { encryptSensitivePayload } = await import("./sensitivePayloadEncryption");
+  const result = await encryptSensitivePayload(body, config.sensitivePayloadEncryption);
+  if (result.encryptedFieldCount > 0) {
+    if (result.durationMs > 100) {
+      console.warn(`Sensitive payload encryption exceeded 100ms target: ${result.durationMs.toFixed(1)}ms`);
+    }
+  }
+  return result.payload;
+}
+
 async function request<T>(
   method: HttpMethod,
   path: string,
@@ -55,20 +68,33 @@ async function request<T>(
   const timeoutId = setTimeout(() => controller.abort(), cfg.timeout);
   const startedAt = performance.now();
 
+  const tracer = getTracer();
+  const span = tracer.startSpan(`HTTP ${method}`);
+  span.setAttributes({
+    "http.method": method,
+    "http.url": url,
+    "http.target": path,
+  });
+
   try {
     const headers: Record<string, string> = { ...cfg.headers };
     if (sessionToken) {
       headers["Authorization"] = `Bearer ${sessionToken}`;
     }
 
+    // Inject W3C Trace Context
+    propagator.inject(span.context, headers);
+
     const response = await fetch(url, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: body ? JSON.stringify(await prepareRequestBody(body, cfg)) : undefined,
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
+
+    span.setAttribute("http.status_code", response.status);
 
     let data: T | null = null;
     const contentType = response.headers.get("content-type");
@@ -79,6 +105,10 @@ async function request<T>(
     logApiRequest(method, path, response.status, startedAt);
 
     if (!response.ok) {
+      span.setStatus({
+        code: "ERROR",
+        message: `HTTP ${response.status}: ${response.statusText}`,
+      });
       return {
         data: null,
         error: `HTTP ${response.status}: ${response.statusText}`,
@@ -86,11 +116,13 @@ async function request<T>(
       };
     }
 
+    span.setStatus("OK");
     return { data, error: null, status: response.status };
   } catch (err) {
     clearTimeout(timeoutId);
+    span.recordException(err as Error);
     if ((err as Error).name === "AbortError") {
-      logApiRequest(method, path, 0, startedAt, "Request timed out");
+      span.setAttribute("http.status_code", 0);
       return { data: null, error: "Request timed out", status: 0 };
     }
     logApiRequest(method, path, 0, startedAt, (err as Error).message || "Network error");
@@ -101,6 +133,7 @@ async function request<T>(
     };
   } finally {
     activeControllers.delete(controller);
+    span.end();
   }
 }
 
