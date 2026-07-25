@@ -1,0 +1,134 @@
+name: Accessibility Audit
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "public/**"
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "public/**"
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  axe-core:
+    name: axe-core Automated Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start preview server
+        run: |
+          npm run start &
+          sleep 5
+          npx wait-on http://localhost:3000
+
+      - name: Run axe-core audit
+        uses: dequelabs/axe-core-github-action@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          build: false
+          scan_whole_application: true
+          fail_on: critical,serious
+          output_directory: a11y-results
+
+      - name: Upload axe-core results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-core-report
+          path: a11y-results
+
+  lighthouse:
+    name: Lighthouse Accessibility Score
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.14
+          lhci autorun \
+            --collect.url=http://localhost:3000 \
+            --collect.numberOfRuns=3 \
+            --assert.presets=lighthouse:no-pwa \
+            --assert.assertions.categories:accessibility=error
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  keyboard-audit:
+    name: Keyboard Navigation Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start preview server
+        run: |
+          npm run start &
+          npx wait-on http://localhost:3000
+
+      - name: Run keyboard tests
+        run: npx playwright test tests/a11y/keyboard.spec.ts --reporter=list
+        env:
+          CI: true
+
+  report:
+    name: Accessibility Report
+    if: always()
+    needs: [axe-core, lighthouse, keyboard-audit]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-report"
+          merge-multiple: true
+
+      - name: Generate summary
+        run: |
+          echo "## Accessibility Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| axe-core Audit | ${{ needs.axe-core.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lighthouse | ${{ needs.lighthouse.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Keyboard Tests | ${{ needs.keyboard-audit.result }} |" >> $GITHUB_STEP_SUMMARY
