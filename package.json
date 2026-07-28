@@ -12,7 +12,8 @@
     "test:ui": "vitest --ui",
     "test:visual": "npx playwright test tests/visual",
     "visual:update-baselines": "npx tsx scripts/update-baselines.ts",
-    "audit:security": "npm audit --audit-level=high"
+    "docker:build": "docker build -t utility-frontend .",
+    "docker:build:plain": "docker build --progress=plain -t utility-frontend ."
   },
   "dependencies": {
     "@stellar/stellar-sdk": "^15.1.0",
