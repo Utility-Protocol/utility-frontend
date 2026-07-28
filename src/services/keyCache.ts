@@ -85,9 +85,8 @@ async function getDb(): Promise<IDBPDatabase> {
 
 /** Lowercase hex SHA-256 of the given bytes using SubtleCrypto. */
 export async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
-  const stableBytes = new Uint8Array(bytes.byteLength);
-  stableBytes.set(new Uint8Array(bytes));
-  const digest = await crypto.subtle.digest("SHA-256", stableBytes);
+  const normalizedBytes = new Uint8Array(bytes);
+  const digest = await crypto.subtle.digest("SHA-256", normalizedBytes);
   return Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");

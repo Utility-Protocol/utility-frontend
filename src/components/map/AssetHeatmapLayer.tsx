@@ -20,7 +20,7 @@ interface HeatmapProps {
   onTileUpdate?: (tileKey: string, data: Float32Array) => void;
 }
 
-export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate: _onTileUpdate }: HeatmapProps) {
+export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate }: HeatmapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate: _onTileUpd
         id: boundary.id,
         layer: boundary.layer,
         tiles,
-        updateFn: async (tileKey: string) => {
+        updateFn: async (_tileKey: string) => {
           const heatValues = new Float32Array(256 * 256);
           for (const asset of assets) {
             const tx = Math.floor((asset.lng - boundary.region.minX) / (boundary.region.maxX - boundary.region.minX) * 256);
@@ -40,7 +40,7 @@ export function AssetHeatmapLayer({ assets, boundaries, onTileUpdate: _onTileUpd
               heatValues[ty * 256 + tx] += asset.value;
             }
           }
-          onTileUpdate?.(tileKey, heatValues);
+          onTileUpdate?.(_tileKey, heatValues);
           return heatValues;
         },
       });
