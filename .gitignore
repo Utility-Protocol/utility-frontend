@@ -44,3 +44,6 @@ next-env.d.ts
 # playwright
 /test-results/
 /playwright-report/
+
+# Lighthouse CI local artifacts
+.lighthouseci/
