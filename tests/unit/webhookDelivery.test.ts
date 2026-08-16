@@ -37,7 +37,7 @@ describe("webhook delivery signatures", () => {
 
 describe("WebhookDeliveryService", () => {
   it("delivers a signed POST request", async () => {
-    const fetcher = vi.fn(async () => new Response(null, { status: 204 }));
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(null, { status: 204 }));
     const service = new WebhookDeliveryService({
       fetcher,
       now: () => new Date("2026-07-18T00:00:00.000Z"),
@@ -98,7 +98,7 @@ describe("WebhookDeliveryService", () => {
   });
 
   it("marks delivery failed after exhausting attempts", async () => {
-    const fetcher = vi.fn(async () => new Response(null, { status: 500 }));
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(null, { status: 500 }));
     const service = new WebhookDeliveryService({ fetcher, sleep: vi.fn(async () => undefined) });
 
     const result = await service.deliver(event, {

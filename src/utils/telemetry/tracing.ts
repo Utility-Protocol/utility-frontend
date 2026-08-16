@@ -325,7 +325,7 @@ class TracingSystem {
 
       const context: SpanContext = { traceId, spanId, traceFlags };
       return new Span(name, context, parentSpanId, options);
-    } catch (err) {
+    } catch {
       // Bulletproof fail-safe returns an unsampled, dummy span rather than throwing
       return new Span(name, { traceId: "00000000000000000000000000000000", spanId: "0000000000000000", traceFlags: "00" }, null);
     }

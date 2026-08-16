@@ -6,6 +6,9 @@ import { FleetGrid } from "@/components/spatial/FleetGrid";
 import { useWeb3Auth } from "@/hooks/useWeb3Auth";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { GracefulDegradationDashboard } from "@/components/dashboard/GracefulDegradationDashboard";
+import { SloMonitoringPanel } from "@/components/dashboard/SloMonitoringPanel";
+import { DisasterRecoveryPanel } from "@/components/dashboard/DisasterRecoveryPanel";
+import { RuntimeConfigAuditPanel } from "@/components/ops/RuntimeConfigAuditPanel";
 
 const GridMapSkeleton = () => (
   <div className="w-full h-[500px] rounded-xl bg-muted animate-pulse flex items-center justify-center border border-border">

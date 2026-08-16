@@ -1,6 +1,7 @@
 "use client";
 
 import { getTracer, propagator } from "@/utils/telemetry/tracing";
+import { logger } from "@/utils/telemetry/structuredLogger";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
