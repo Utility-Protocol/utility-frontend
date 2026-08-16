@@ -12,19 +12,19 @@ import { RuntimeConfigAuditPanel } from "@/components/ops/RuntimeConfigAuditPane
 
 const GridMapSkeleton = () => (
   <div className="w-full h-[500px] rounded-xl bg-muted animate-pulse flex items-center justify-center border border-border">
-    <span className="text-sm text-muted-foreground">Loading Grid Map...</span>
+    <span className="text-sm text-foreground">Loading Grid Map...</span>
   </div>
 );
 
 const LiveDataViewSkeleton = () => (
   <div className="w-full h-[200px] rounded-xl bg-muted animate-pulse flex items-center justify-center border border-border">
-    <span className="text-sm text-muted-foreground">Loading Live Telemetry...</span>
+    <span className="text-sm text-foreground">Loading Live Telemetry...</span>
   </div>
 );
 
 const TariffEditorSkeleton = () => (
   <div className="w-full h-[300px] rounded-xl bg-muted animate-pulse flex items-center justify-center border border-border">
-    <span className="text-sm text-muted-foreground">Loading Tariff Configuration...</span>
+    <span className="text-sm text-foreground">Loading Tariff Configuration...</span>
   </div>
 );
 

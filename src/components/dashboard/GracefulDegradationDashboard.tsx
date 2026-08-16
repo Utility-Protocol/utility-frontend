@@ -161,7 +161,7 @@ export function GracefulDegradationDashboard() {
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium text-muted-foreground">Frame Rate</span>
-              <span className={`font-mono font-bold ${state.fps < 40 ? "text-amber-500" : "text-green-500"}`}>
+              <span className={`font-mono font-bold ${state.fps < 40 ? "text-amber-500" : "text-green-700"}`}>
                 {state.fps} FPS
               </span>
             </div>
@@ -174,6 +174,7 @@ export function GracefulDegradationDashboard() {
               onChange={(e) => handleMetricChange("fps", Number(e.target.value))}
               disabled={state.mode === "manual"}
               className="w-full accent-foreground disabled:opacity-45"
+              aria-label="Frame rate"
             />
           </div>
 
@@ -181,7 +182,7 @@ export function GracefulDegradationDashboard() {
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium text-muted-foreground">WS Latency</span>
-              <span className={`font-mono font-bold ${state.latency > 150 ? "text-amber-500" : "text-green-500"}`}>
+              <span className={`font-mono font-bold ${state.latency > 150 ? "text-amber-500" : "text-green-700"}`}>
                 {state.latency} ms
               </span>
             </div>
@@ -194,6 +195,7 @@ export function GracefulDegradationDashboard() {
               onChange={(e) => handleMetricChange("latency", Number(e.target.value))}
               disabled={state.mode === "manual"}
               className="w-full accent-foreground disabled:opacity-45"
+              aria-label="WebSocket latency"
             />
           </div>
 
@@ -201,7 +203,7 @@ export function GracefulDegradationDashboard() {
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium text-muted-foreground">Tx Queue Size</span>
-              <span className={`font-mono font-bold ${state.pendingTransactions > 5 ? "text-amber-500" : "text-green-500"}`}>
+              <span className={`font-mono font-bold ${state.pendingTransactions > 5 ? "text-amber-500" : "text-green-700"}`}>
                 {state.pendingTransactions} pending
               </span>
             </div>
@@ -216,6 +218,7 @@ export function GracefulDegradationDashboard() {
               }
               disabled={state.mode === "manual"}
               className="w-full accent-foreground disabled:opacity-45"
+              aria-label="Pending transaction queue size"
             />
           </div>
         </div>
@@ -233,7 +236,7 @@ export function GracefulDegradationDashboard() {
               <span className="text-lg font-mono font-bold text-foreground">
                 {p99.toFixed(1)} ms
               </span>
-              <div className="text-[10px] text-green-500">Target: &lt; 100ms</div>
+              <div className="text-[10px] text-green-700">Target: &lt; 100ms</div>
             </div>
           </div>
 
@@ -254,7 +257,7 @@ export function GracefulDegradationDashboard() {
               Active Shedding Actions
             </span>
             <div className="bg-background/80 p-2 rounded border border-border font-mono text-[10px] max-h-[50px] overflow-y-auto space-y-1 leading-normal">
-              {isHealthy && <div className="text-green-500">● Core grid healthy. No active shedding.</div>}
+              {isHealthy && <div className="text-green-700">● Core grid healthy. No active shedding.</div>}
               {isDegraded && (
                 <>
                   <div className="text-amber-500">● WS Telemetry rendering throttled.</div>
@@ -292,7 +295,7 @@ export function GracefulDegradationDashboard() {
               onClick={() => setFlag("highFrequencyTelemetry", !flags.highFrequencyTelemetry)}
               className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase transition-colors ${
                 flags.highFrequencyTelemetry
-                  ? "bg-emerald-500 text-background"
+                  ? "bg-emerald-700 text-background"
                   : "bg-red-500 text-background"
               }`}
             >
@@ -312,7 +315,7 @@ export function GracefulDegradationDashboard() {
               onClick={() => setFlag("heavyWeightTasks", !flags.heavyWeightTasks)}
               className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase transition-colors ${
                 flags.heavyWeightTasks
-                  ? "bg-emerald-500 text-background"
+                  ? "bg-emerald-700 text-background"
                   : "bg-red-500 text-background"
               }`}
             >

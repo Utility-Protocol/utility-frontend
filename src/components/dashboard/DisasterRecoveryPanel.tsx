@@ -38,7 +38,7 @@ export interface DisasterRecoveryPanelProps {
 }
 
 function statusClass(status: string) {
-  if (status === "pass" || status === "healthy") return "bg-emerald-500/15 text-emerald-600";
+  if (status === "pass" || status === "healthy") return "bg-emerald-500/15 text-emerald-700";
   if (status === "warning" || status === "degraded") return "bg-amber-500/15 text-amber-600";
   return "bg-red-500/15 text-red-600";
 }

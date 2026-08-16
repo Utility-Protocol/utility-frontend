@@ -39,20 +39,16 @@ jobs:
           npx wait-on http://localhost:3000
 
       - name: Run axe-core audit
-        uses: dequelabs/axe-core-github-action@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          build: false
-          scan_whole_application: true
-          fail_on: critical,serious
-          output_directory: a11y-results
+        run: npx playwright test -c playwright.a11y.config.ts tests/a11y/axe.spec.ts --reporter=list
+        env:
+          CI: true
 
       - name: Upload axe-core results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: axe-core-report
-          path: a11y-results
+          path: test-results
 
   lighthouse:
     name: Lighthouse Accessibility Score
@@ -71,6 +67,11 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+      - name: Start preview server
+        run: |
+          npm run start &
+          npx wait-on http://localhost:3000
 
       - name: Run Lighthouse CI
         run: |
@@ -107,7 +108,7 @@ jobs:
           npx wait-on http://localhost:3000
 
       - name: Run keyboard tests
-        run: npx playwright test tests/a11y/keyboard.spec.ts --reporter=list
+        run: npx playwright test -c playwright.a11y.config.ts tests/a11y/keyboard.spec.ts --reporter=list
         env:
           CI: true
 

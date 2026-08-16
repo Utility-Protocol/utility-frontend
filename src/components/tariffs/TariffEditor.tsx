@@ -146,7 +146,7 @@ export function TariffEditor() {
             {bands.length > 1 && (
               <button
                 onClick={() => removeBand(band.id)}
-                className="text-destructive text-xs pb-1 hover:underline self-center"
+                className="text-red-700 text-xs pb-1 hover:underline self-center"
               >
                 Remove
               </button>
@@ -163,6 +163,7 @@ export function TariffEditor() {
             value={previewAmount}
             onChange={(e) => setPreviewAmount(e.target.value)}
             className="rounded-lg border border-border bg-transparent px-3 py-2 text-sm w-32 font-mono focus:outline-none focus:ring-1 focus:ring-ring"
+            aria-label="Preview pricing amount"
           />
           <span className="text-sm">units →</span>
           <span className="text-lg font-bold font-mono">{previewCost()}</span>
