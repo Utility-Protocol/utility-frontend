@@ -111,7 +111,7 @@ export function ZKSubmissionPanel({
       </div>
 
       {!flags.heavyWeightTasks && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-500 animate-pulse">
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-700 animate-pulse">
           ⚠️ <strong>Capacity Shedding Active:</strong> Proving tasks are temporarily disabled. range proof generations (Groth16 ZK) are disabled to protect system P99 response times.
         </div>
       )}

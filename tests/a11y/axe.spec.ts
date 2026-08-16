@@ -6,7 +6,8 @@ const SCAN_PATHS = ["/", "/export"];
 test.describe("axe-core accessibility audit", () => {
   for (const path of SCAN_PATHS) {
     test(`no critical or serious violations on ${path}`, async ({ page }) => {
-      await page.goto(path, { waitUntil: "networkidle" });
+      await page.goto(path, { waitUntil: "load", timeout: 60_000 });
+      await page.waitForTimeout(2_000);
       await page.addScriptTag({ content: axe.source });
 
       const violations = await page.evaluate(async () => {

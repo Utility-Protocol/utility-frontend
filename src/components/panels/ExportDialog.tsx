@@ -182,7 +182,7 @@ export function ExportDialog({
         )}
 
         {!flags.heavyWeightTasks && (
-          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-500 animate-pulse">
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-700 animate-pulse">
             ⚠️ <strong>Capacity Shedding Active:</strong> Bulk exporting is temporarily suspended to guarantee low latency on critical operator tasks.
           </div>
         )}
@@ -331,7 +331,7 @@ export function ExportDialog({
               </span>
             </div>
             {progress.warning && (
-              <p className="text-xs text-amber-500">{progress.warning}</p>
+              <p className="text-xs text-amber-700">{progress.warning}</p>
             )}
             {progress.usedFallback && (
               <p className="text-xs text-muted-foreground">

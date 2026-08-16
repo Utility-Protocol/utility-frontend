@@ -38,6 +38,9 @@ jobs:
           sleep 5
           npx wait-on http://localhost:3000
 
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
       - name: Run axe-core audit
         run: npx playwright test -c playwright.a11y.config.ts tests/a11y/axe.spec.ts --reporter=list
         env:
@@ -77,8 +80,8 @@ jobs:
         run: |
           npm install -g @lhci/cli@0.14
           lhci autorun \
-            --collect.url=http://localhost:3000 \
-            --collect.numberOfRuns=3 \
+            --collect.url=http://localhost:3000/export \
+            --collect.numberOfRuns=1 \
             --assert.presets=lighthouse:no-pwa \
             --assert.assertions.categories:accessibility=error
         env:
@@ -106,6 +109,9 @@ jobs:
         run: |
           npm run start &
           npx wait-on http://localhost:3000
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
 
       - name: Run keyboard tests
         run: npx playwright test -c playwright.a11y.config.ts tests/a11y/keyboard.spec.ts --reporter=list

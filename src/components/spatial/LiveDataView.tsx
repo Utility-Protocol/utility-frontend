@@ -182,7 +182,7 @@ export function LiveDataView() {
         ref={containerRef}
         className="relative w-full h-[200px] rounded-xl border border-border overflow-hidden bg-muted/20 flex flex-col items-center justify-center p-4 text-center"
       >
-        <span className="text-sm font-semibold text-amber-500 animate-pulse">
+        <span className="text-sm font-semibold text-amber-700 animate-pulse">
           Capacity Shedding Active: High-Frequency Canvas Paused
         </span>
         <span className="text-xs text-muted-foreground mt-1 max-w-md">

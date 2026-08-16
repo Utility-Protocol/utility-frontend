@@ -138,7 +138,7 @@ export function GracefulDegradationDashboard() {
                         ? lvl === "healthy"
                           ? "border-green-500 bg-green-500/10 text-green-500"
                           : lvl === "degraded"
-                          ? "border-amber-500 bg-amber-500/10 text-amber-500"
+                          ? "border-amber-500 bg-amber-500/10 text-amber-700"
                           : "border-red-500 bg-red-500/10 text-red-500"
                         : "border-border text-muted-foreground hover:bg-accent"
                     }`}
@@ -161,7 +161,7 @@ export function GracefulDegradationDashboard() {
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium text-muted-foreground">Frame Rate</span>
-              <span className={`font-mono font-bold ${state.fps < 40 ? "text-amber-500" : "text-green-700"}`}>
+              <span className={`font-mono font-bold ${state.fps < 40 ? "text-amber-700" : "text-green-700"}`}>
                 {state.fps} FPS
               </span>
             </div>
@@ -182,7 +182,7 @@ export function GracefulDegradationDashboard() {
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium text-muted-foreground">WS Latency</span>
-              <span className={`font-mono font-bold ${state.latency > 150 ? "text-amber-500" : "text-green-700"}`}>
+              <span className={`font-mono font-bold ${state.latency > 150 ? "text-amber-700" : "text-green-700"}`}>
                 {state.latency} ms
               </span>
             </div>
@@ -203,7 +203,7 @@ export function GracefulDegradationDashboard() {
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium text-muted-foreground">Tx Queue Size</span>
-              <span className={`font-mono font-bold ${state.pendingTransactions > 5 ? "text-amber-500" : "text-green-700"}`}>
+              <span className={`font-mono font-bold ${state.pendingTransactions > 5 ? "text-amber-700" : "text-green-700"}`}>
                 {state.pendingTransactions} pending
               </span>
             </div>
@@ -260,7 +260,7 @@ export function GracefulDegradationDashboard() {
               {isHealthy && <div className="text-green-700">● Core grid healthy. No active shedding.</div>}
               {isDegraded && (
                 <>
-                  <div className="text-amber-500">● WS Telemetry rendering throttled.</div>
+                  <div className="text-amber-700">● WS Telemetry rendering throttled.</div>
                   <div className="text-muted-foreground">● Background processes active.</div>
                 </>
               )}
