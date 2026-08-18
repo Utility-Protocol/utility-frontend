@@ -5,7 +5,7 @@ const SCAN_PATHS = ["/", "/export"];
 
 test.describe("axe-core accessibility audit", () => {
   for (const path of SCAN_PATHS) {
-    test(`no critical or serious violations on ${path}`, async ({ page }) => {
+    test(`no critical, serious, or moderate violations on ${path}`, async ({ page }) => {
       await page.goto(path, { waitUntil: "load", timeout: 60_000 });
       await page.waitForTimeout(2_000);
       await page.addScriptTag({ content: axe.source });
@@ -18,11 +18,14 @@ test.describe("axe-core accessibility audit", () => {
             values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
           },
         });
+        // Gate on critical, serious, AND moderate impact. The dashboard
+        // currently reports zero violations at any level (see
+        // docs/ACCESSIBILITY.md); moderate is included so a regression that
+        // introduces a moderate WCAG issue also fails the build, not just
+        // critical/serious ones.
+        const blocking = new Set(["critical", "serious", "moderate"]);
         return results.violations
-          .filter(
-            (violation) =>
-              violation.impact === "critical" || violation.impact === "serious"
-          )
+          .filter((violation) => blocking.has(violation.impact ?? ""))
           .map((violation) => ({
             id: violation.id,
             impact: violation.impact,
