@@ -12,6 +12,9 @@
     "test:ui": "vitest --ui",
     "test:visual": "npx playwright test tests/visual",
     "test:a11y": "npx playwright test --config=playwright.a11y.config.ts",
+    "test:performance": "npx playwright test --config=playwright.performance.config.ts",
+    "performance:analyze": "npx tsx scripts/analyze-performance.ts",
+    "performance:update-baseline": "npx tsx scripts/update-performance-baseline.ts",
     "visual:update-baselines": "npx tsx scripts/update-baselines.ts",
     "test:coverage": "vitest --run --coverage.enabled --coverage.provider=v8",
     "test:coverage:ci": "vitest --run --coverage.enabled --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=lcov"
