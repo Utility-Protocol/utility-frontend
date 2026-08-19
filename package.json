@@ -12,6 +12,8 @@
     "test:ui": "vitest --ui",
     "test:visual": "npx playwright test tests/visual",
     "test:a11y": "npx playwright test --config=playwright.a11y.config.ts",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "visual:update-baselines": "npx tsx scripts/update-baselines.ts",
     "test:coverage": "vitest --run --coverage.enabled --coverage.provider=v8",
     "test:coverage:ci": "vitest --run --coverage.enabled --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=lcov"
@@ -26,10 +28,14 @@
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
+    "@storybook/addon-a11y": "^10.5.9",
+    "@storybook/addon-docs": "^10.5.9",
+    "@storybook/nextjs-vite": "^10.5.9",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -46,6 +52,7 @@
     "jsdom": "^29.1.1",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0",
+    "storybook": "^10.5.9",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5",

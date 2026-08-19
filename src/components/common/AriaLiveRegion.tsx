@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 type AriaLivePoliteness = "polite" | "assertive" | "off";
 
@@ -62,37 +68,60 @@ export function AriaLiveRegion({
 }
 
 export function useAriaLiveAnnouncer() {
-  const [message, setMessage] = useState("");
+  const [politeMessage, setPoliteMessage] = useState("");
+  const [assertiveMessage, setAssertiveMessage] = useState("");
+  const politeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const assertiveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  function announce(msg: string, priority: "polite" | "assertive" = "polite") {
-    setMessage(msg);
-    setTimeout(() => setMessage(""), 100);
-    return { politeness: priority };
-  }
+  const announce = useCallback(
+    (msg: string, priority: "polite" | "assertive" = "polite") => {
+      const isAssertive = priority === "assertive";
+      const timerRef = isAssertive ? assertiveTimerRef : politeTimerRef;
+      const setMessage = isAssertive
+        ? setAssertiveMessage
+        : setPoliteMessage;
 
-  function announceError(msg: string) {
-    return announce(`Error: ${msg}`, "assertive");
-  }
+      clearTimeout(timerRef.current);
+      setMessage(msg);
+      timerRef.current = setTimeout(() => setMessage(""), 100);
+    },
+    []
+  );
 
-  function announceSuccess(msg: string) {
-    return announce(`Success: ${msg}`, "polite");
-  }
+  const announceError = useCallback(
+    (msg: string) => announce(`Error: ${msg}`, "assertive"),
+    [announce]
+  );
+
+  const announceSuccess = useCallback(
+    (msg: string) => announce(`Success: ${msg}`, "polite"),
+    [announce]
+  );
+
+  useEffect(
+    () => () => {
+      clearTimeout(politeTimerRef.current);
+      clearTimeout(assertiveTimerRef.current);
+    },
+    []
+  );
 
   return {
-    message,
     announce,
     announceError,
     announceSuccess,
+    assertiveMessage,
+    politeMessage,
     AriaLive: (
       <AriaLiveRegion
-        message={message}
+        message={politeMessage}
         politeness="polite"
         role="status"
       />
     ),
     AriaLiveAssertive: (
       <AriaLiveRegion
-        message={message}
+        message={assertiveMessage}
         politeness="assertive"
         role="alert"
       />
