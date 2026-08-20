@@ -236,7 +236,7 @@ export function Provisioner() {
     return (
       <div ref={containerRef} className="rounded-xl border border-border p-6 space-y-4" tabIndex={-1}>
         <h3 className="font-semibold">Scan QR Code on Device</h3>
-        <div className="bg-white rounded-lg p-6 flex flex-col items-center justify-center border border-border">
+        <div className="bg-background rounded-lg p-6 flex flex-col items-center justify-center border border-border">
           {error ? (
             <div className="text-red-500 text-sm flex flex-col items-center gap-2">
               <svg
