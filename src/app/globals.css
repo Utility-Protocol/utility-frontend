@@ -2,6 +2,7 @@
 @import "../styles/breakpoints.css";
 @import "../styles/containers.css";
 @import "../styles/virtual-list.css";
+@import "../styles/mobile-navigation.css";
 
 :root,
 .light {
