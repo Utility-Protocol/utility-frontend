@@ -1,0 +1,105 @@
+name: Performance Regression
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "src/**"
+      - "performance/**"
+      - "tests/performance/**"
+      - "scripts/analyze-performance.ts"
+      - "scripts/update-performance-baseline.ts"
+      - "playwright.performance.config.ts"
+      - ".github/workflows/performance-regression.yml"
+      - "package.json"
+      - "package-lock.json"
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "performance/budgets.json"
+      - "tests/performance/**"
+      - "scripts/**"
+      - ".github/workflows/performance-regression.yml"
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: performance-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: 20
+
+jobs:
+  performance-regression:
+    name: Performance Regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run performance benchmarks
+        run: npx playwright test --config=playwright.performance.config.ts
+
+      - name: Analyze performance regression
+        id: analyze
+        continue-on-error: true
+        run: npx tsx scripts/analyze-performance.ts
+
+      - name: Upload performance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: performance-results/
+          retention-days: 30
+
+      - name: Post PR comment
+        if: github.event_name == 'pull_request' && always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f performance-results/performance-comment.md ]; then
+            echo "No performance comment found — skipping."
+            exit 0
+          fi
+          gh pr comment ${{ github.event.pull_request.number }} --body-file performance-results/performance-comment.md || echo "Could not post PR comment (may be a fork PR)."
+
+      - name: Refresh baseline on main
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.analyze.outcome == 'success'
+        run: |
+          npx tsx scripts/update-performance-baseline.ts
+          if git diff --quiet performance/baseline.json; then
+            echo "Baseline unchanged — skipping commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add performance/baseline.json
+            git commit -m "chore(perf): refresh performance baseline [skip ci]"
+            git push
+          fi
+
+      - name: Fail on performance regression
+        if: github.event_name == 'pull_request' && steps.analyze.outcome == 'failure'
+        run: exit 1
