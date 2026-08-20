@@ -1,0 +1,95 @@
+/*
+ * VirtualList — Styles for the virtualised scrolling component.
+ *
+ * The component uses absolute positioning for each row and relies on
+ * `transform: translateY()` for GPU-accelerated layout. These styles
+ * handle the container chrome, loading states, and scrollbar treatment.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Container                                                           */
+/* ------------------------------------------------------------------ */
+
+.virtual-list-container {
+  contain: strict;
+  will-change: scroll-position;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.virtual-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.virtual-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.virtual-list-container::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 3px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Inner spacer (defines total scrollable height)                      */
+/* ------------------------------------------------------------------ */
+
+.virtual-list-inner {
+  contain: layout size;
+}
+
+/* ------------------------------------------------------------------ */
+/* Individual rows                                                     */
+/* ------------------------------------------------------------------ */
+
+.virtual-list-row {
+  contain: layout style;
+}
+
+/* ------------------------------------------------------------------ */
+/* Empty state                                                         */
+/* ------------------------------------------------------------------ */
+
+.virtual-list-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Loading indicator                                                   */
+/* ------------------------------------------------------------------ */
+
+.virtual-list-loading {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.virtual-list-loading-default {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+.virtual-list-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--foreground);
+  border-radius: 50%;
+  animation: vlist-spin 0.6s linear infinite;
+}
+
+@keyframes vlist-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
