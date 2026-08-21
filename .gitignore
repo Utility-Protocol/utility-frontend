@@ -50,3 +50,6 @@ next-env.d.ts
 
 # Storybook
 /storybook-static/
+
+# performance regression
+/performance-results/
