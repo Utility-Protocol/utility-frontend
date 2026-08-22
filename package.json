@@ -7,11 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:visual": "npx playwright test tests/visual",
     "test:a11y": "npx playwright test --config=playwright.a11y.config.ts",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "test:performance": "npx playwright test --config=playwright.performance.config.ts",
     "performance:analyze": "npx tsx scripts/analyze-performance.ts",
     "performance:update-baseline": "npx tsx scripts/update-performance-baseline.ts",
@@ -29,10 +32,15 @@
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
+    "@next/eslint-plugin-next": "16.3.1",
+    "@storybook/addon-a11y": "^10.5.9",
+    "@storybook/addon-docs": "^10.5.9",
+    "@storybook/react-vite": "^10.5.9",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -45,12 +53,15 @@
     "@vitejs/plugin-react": "^6.0.2",
     "axe-core": "^4.13.0",
     "eslint": "^9",
+    "eslint-plugin-react-hooks": "^7.0.0",
     "jsdom": "^29.1.1",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0",
+    "storybook": "^10.5.9",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5",
+    "typescript-eslint": "^8.46.0",
     "vitest": "^4.1.9"
   }
 }
