@@ -14,34 +14,6 @@ function makeItems(count: number): Array<{ id: number; label: string }> {
   }));
 }
 
-/** Stub the container ref with controllable scrollTop / clientHeight. */
-function mockContainerRef(
-  hook: ReturnType<typeof renderHook<ReturnType<typeof useVirtualList>, unknown>>,
-  scrollTop = 0,
-  clientHeight = 400
-) {
-  const div = document.createElement("div");
-
-  Object.defineProperties(div, {
-    scrollTop: { value: scrollTop, writable: true },
-    clientHeight: { value: clientHeight, configurable: true },
-    scrollTo: {
-      value: vi.fn(({ top }: ScrollToOptions) => {
-        Object.defineProperty(div, "scrollTop", {
-          value: top,
-          writable: true,
-          configurable: true,
-        });
-      }),
-      configurable: true,
-    },
-  });
-
-  // Assign the mock div to the containerRef
-  (hook.result.current.containerRef as { current: HTMLDivElement | null }).current = div;
-  return div;
-}
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------

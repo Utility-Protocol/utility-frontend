@@ -49,4 +49,29 @@ describe("debounce", () => {
     expect(fn).toHaveBeenCalledTimes(1);
     expect(fn).toHaveBeenLastCalledWith("b");
   });
+
+  it("cancels a pending call", () => {
+    const fn = vi.fn();
+    const debounced = debounce(fn, 100);
+
+    debounced("cancelled");
+    debounced.cancel();
+    vi.advanceTimersByTime(100);
+
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it("flushes the latest pending call immediately", () => {
+    const fn = vi.fn();
+    const debounced = debounce(fn, 100);
+
+    debounced("first");
+    debounced("latest");
+    debounced.flush();
+
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenLastCalledWith("latest");
+    vi.advanceTimersByTime(100);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
 });

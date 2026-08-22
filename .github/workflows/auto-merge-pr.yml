@@ -18,7 +18,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const prNumber = context.payload.pull_request.number;
-            
+
             try {
               // Enable auto-merge with squash method
               await github.graphql(`
@@ -38,7 +38,7 @@ jobs:
                 pullRequestId: `PR_${context.repo.owner}_${context.repo.repo}_${prNumber}`,
                 mergeMethod: 'SQUASH'
               });
-              
+
               console.log(`Auto-merge enabled for PR #${prNumber}`);
             } catch (error) {
               // Try alternative method using REST API

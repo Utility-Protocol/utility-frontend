@@ -252,14 +252,18 @@ export function useVirtualList<T>(
   useLayoutEffect(() => {
     if (!scrollRestorationKey) return;
     try {
-      const saved = sessionStorage.getItem(
-        `vlist-scroll-${scrollRestorationKey}`
-      );
+      const storageKey = `vlist-scroll-${scrollRestorationKey}`;
+      const saved = sessionStorage.getItem(storageKey);
       if (saved !== null) {
         const pos = Number(saved);
         if (!Number.isNaN(pos) && containerRef.current) {
           containerRef.current.scrollTop = pos;
         }
+      } else {
+        sessionStorage.setItem(
+          storageKey,
+          String(containerRef.current?.scrollTop ?? 0)
+        );
       }
     } catch {
       /* ignore */
@@ -308,6 +312,9 @@ export function useVirtualList<T>(
     (index: number, element: HTMLElement | null) => {
       if (!element) return;
       const measured = element.getBoundingClientRect().height;
+      // Hidden or not-yet-laid-out rows can report zero. Retain the estimate
+      // until a useful measurement is available to avoid a render cascade.
+      if (!Number.isFinite(measured) || measured <= 0) return;
       const prev = measuredHeights.current.get(index);
       if (prev !== measured) {
         measuredHeights.current.set(index, measured);

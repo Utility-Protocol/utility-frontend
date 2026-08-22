@@ -1,18 +1,29 @@
 import nextPlugin from "@next/eslint-plugin-next";
+import reactHooks from "eslint-plugin-react-hooks";
 import tsEslint from "typescript-eslint";
 
 export default [
   {
-    ignores: [".next/**", "node_modules/**", "out/**", "dist/**", "test-results/**", "playwright-report/**"],
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "out/**",
+      "dist/**",
+      "storybook-static/**",
+      "test-results/**",
+      "playwright-report/**",
+    ],
   },
   ...tsEslint.configs.recommended,
   {
-    plugins: { 
+    plugins: {
       "@next/next": nextPlugin,
-      "react-hooks": (await import("eslint-plugin-react-hooks")).default
+      "react-hooks": reactHooks,
     },
     rules: {
       ...nextPlugin.configs["core-web-vitals"].rules,
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_" },
