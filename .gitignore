@@ -48,5 +48,8 @@ next-env.d.ts
 # Lighthouse CI local artifacts
 .lighthouseci/
 
+# Storybook
+/storybook-static/
+
 # performance regression
 /performance-results/

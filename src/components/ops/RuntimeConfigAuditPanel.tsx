@@ -1,18 +1,20 @@
 import { createRuntimeConfigAudit } from "@/services/runtimeConfigAudit";
-
-const demoAudit = createRuntimeConfigAudit(
-  {
-    NEXT_PUBLIC_CHAIN_NETWORK: "testnet",
-    NEXT_PUBLIC_TELEMETRY_MODE: "streaming",
-    NEXT_PUBLIC_EXPORT_FORMAT: "csv",
-    NEXT_PUBLIC_CANARY_PERCENT: "10",
-  },
-  "2026-07-18T00:00:00.000Z",
-  "dashboard-preview"
-);
+import { useRuntimeConfig } from "@/hooks/useRuntimeConfig";
+import { useMemo } from "react";
 
 export function RuntimeConfigAuditPanel() {
-  const criticalLabel = demoAudit.summary.critical === 0 ? "No critical drift" : `${demoAudit.summary.critical} critical drift`;
+  const runtimeConfig = useRuntimeConfig();
+
+  const auditResult = useMemo(() => {
+    return createRuntimeConfigAudit(
+      runtimeConfig,
+      new Date().toISOString(),
+      "dashboard-preview"
+    );
+  }, [runtimeConfig]);
+
+  const criticalLabel = auditResult.summary.critical === 0 ? "No critical drift" : `${auditResult.summary.critical} critical drift`;
+
 
   return (
     <div className="rounded-xl border border-border bg-background p-4">
@@ -29,11 +31,11 @@ export function RuntimeConfigAuditPanel() {
       <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
         <div>
           <p className="text-muted-foreground">Checked</p>
-          <p className="text-xl font-bold">{demoAudit.summary.checked}</p>
+          <p className="text-xl font-bold">{auditResult.summary.checked}</p>
         </div>
         <div>
           <p className="text-muted-foreground">Drifted</p>
-          <p className="text-xl font-bold">{demoAudit.summary.drifted}</p>
+          <p className="text-xl font-bold">{auditResult.summary.drifted}</p>
         </div>
         <div>
           <p className="text-muted-foreground">P99 budget</p>
@@ -42,7 +44,7 @@ export function RuntimeConfigAuditPanel() {
       </div>
 
       <ul className="mt-4 space-y-2 text-sm">
-        {demoAudit.drifts.map((drift) => (
+        {auditResult.drifts.map((drift) => (
           <li key={drift.key} className="rounded-lg border border-border p-3">
             <span className="font-medium">{drift.service}</span>: {drift.key} expected {String(drift.expected)} but saw {String(drift.actual)}.
           </li>

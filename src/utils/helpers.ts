@@ -43,16 +43,45 @@ export function throttle<T extends (...args: any[]) => any>(
  * Debounce `fn` so it runs only after `wait` ms have elapsed since the last
  * call. Useful for resize/settle events.
  */
+export interface DebouncedFunction<T extends (...args: any[]) => any> {
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+  flush: () => void;
+}
+
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
   wait: number
-): (...args: Parameters<T>) => void {
+): DebouncedFunction<T> {
   let timer: ReturnType<typeof setTimeout> | null = null;
-  return (...args: Parameters<T>): void => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      timer = null;
-      fn(...args);
-    }, wait);
+  let lastArgs: Parameters<T> | null = null;
+
+  const invoke = (): void => {
+    timer = null;
+    if (!lastArgs) return;
+
+    const args = lastArgs;
+    lastArgs = null;
+    fn(...args);
   };
+
+  const debounced = (...args: Parameters<T>): void => {
+    lastArgs = args;
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(invoke, wait);
+  };
+
+  debounced.cancel = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    lastArgs = null;
+  };
+
+  debounced.flush = () => {
+    if (!timer) return;
+    clearTimeout(timer);
+    invoke();
+  };
+
+  return debounced;
 }
