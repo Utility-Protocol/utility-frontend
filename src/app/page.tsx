@@ -9,6 +9,7 @@ import { GracefulDegradationDashboard } from "@/components/dashboard/GracefulDeg
 import { SloMonitoringPanel } from "@/components/dashboard/SloMonitoringPanel";
 import { DisasterRecoveryPanel } from "@/components/dashboard/DisasterRecoveryPanel";
 import { RuntimeConfigAuditPanel } from "@/components/ops/RuntimeConfigAuditPanel";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 
 const GridMapSkeleton = () => (
   <div className="w-full h-[500px] rounded-xl bg-muted animate-pulse flex items-center justify-center border border-border">
@@ -69,40 +70,48 @@ const TxModal = dynamic(
 export default function Home() {
   const { account, isConnected, connect, disconnect } = useWeb3Auth();
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto w-full">
-          <h1 className="text-xl font-bold tracking-tight">
-            Utility Protocol
-          </h1>
-          <nav className="flex items-center gap-4">
-            <ThemeToggle />
-            {isConnected ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground truncate max-w-[160px]">
-                  {account?.address?.slice(0, 6)}...{account?.address?.slice(-4)}
-                </span>
-                <button
-                  onClick={disconnect}
-                  className="rounded-lg border border-border px-4 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
-                >
-                  Disconnect
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={connect}
-                className="rounded-lg bg-foreground text-background px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity"
-              >
-                Connect Wallet
-              </button>
-            )}
-          </nav>
-        </div>
-      </header>
+  const headerContent = (
+    <div className="flex items-center justify-between w-full">
+      <h1 className="text-xl font-bold tracking-tight">Utility Protocol</h1>
+      <nav className="hidden md:flex items-center gap-4">
+        <ThemeToggle />
+        {isConnected ? (
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground truncate max-w-[160px]">
+              {account?.address?.slice(0, 6)}...{account?.address?.slice(-4)}
+            </span>
+            <button
+              onClick={disconnect}
+              className="rounded-lg border border-border px-4 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
+            >
+              Disconnect
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={connect}
+            className="rounded-lg bg-foreground text-background px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            Connect Wallet
+          </button>
+        )}
+      </nav>
+      {/* Mobile header - simplified */}
+      <div className="md:hidden flex items-center gap-2">
+        <ThemeToggle />
+      </div>
+    </div>
+  );
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 space-y-8">
+  const footerContent = (
+    <>
+      &copy; {new Date().getFullYear()} Utility Protocol. All rights reserved.
+    </>
+  );
+
+  return (
+    <ResponsiveLayout header={headerContent} footer={footerContent}>
+      <div className="max-w-7xl mx-auto w-full px-4 md:px-6 py-8 space-y-8">
         <SloMonitoringPanel />
 
         <section>
@@ -152,11 +161,7 @@ export default function Home() {
             balance=""
           />
         </Suspense>
-      </main>
-
-      <footer className="border-t border-border py-4 text-center text-sm text-muted-foreground">
-        &copy; {new Date().getFullYear()} Utility Protocol. All rights reserved.
-      </footer>
-    </div>
+      </div>
+    </ResponsiveLayout>
   );
 }

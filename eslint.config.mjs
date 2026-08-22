@@ -7,7 +7,10 @@ export default [
   },
   ...tsEslint.configs.recommended,
   {
-    plugins: { "@next/next": nextPlugin },
+    plugins: { 
+      "@next/next": nextPlugin,
+      "react-hooks": (await import("eslint-plugin-react-hooks")).default
+    },
     rules: {
       ...nextPlugin.configs["core-web-vitals"].rules,
       "@typescript-eslint/no-unused-vars": [

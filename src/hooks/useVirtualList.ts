@@ -173,7 +173,6 @@ export function useVirtualList<T>(
 
     return { offsets: _offsets, heights: _heights, totalHeight: cumulative };
     // measureVersion dependency triggers recomputation after DOM measurement.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length, estimatedItemHeight, measureVersion]);
 
   // -----------------------------------------------------------------------

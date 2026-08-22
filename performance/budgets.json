@@ -1,0 +1,58 @@
+{
+  "budgets": [
+    {
+      "id": "api-runtime-config-audit",
+      "name": "Runtime Config Audit API",
+      "path": "/api/runtime-config/audit",
+      "metric": "p99",
+      "budgetMs": 100,
+      "regressionTolerancePercent": 20,
+      "minSampleCount": 5
+    },
+    {
+      "id": "api-rate-limit",
+      "name": "Rate Limit API",
+      "path": "/api/rate-limit",
+      "metric": "p99",
+      "budgetMs": 100,
+      "regressionTolerancePercent": 20,
+      "minSampleCount": 5
+    },
+    {
+      "id": "page-home-ttfb",
+      "name": "Home page TTFB",
+      "path": "/",
+      "metric": "p99",
+      "budgetMs": 1000,
+      "regressionTolerancePercent": 25,
+      "minSampleCount": 3
+    },
+    {
+      "id": "page-export-ttfb",
+      "name": "Export page TTFB",
+      "path": "/export",
+      "metric": "p99",
+      "budgetMs": 1000,
+      "regressionTolerancePercent": 25,
+      "minSampleCount": 3
+    },
+    {
+      "id": "page-home-lcp",
+      "name": "Home page LCP",
+      "path": "/",
+      "metric": "p99",
+      "budgetMs": 2500,
+      "regressionTolerancePercent": 25,
+      "minSampleCount": 3
+    },
+    {
+      "id": "page-export-lcp",
+      "name": "Export page LCP",
+      "path": "/export",
+      "metric": "p99",
+      "budgetMs": 2500,
+      "regressionTolerancePercent": 25,
+      "minSampleCount": 3
+    }
+  ]
+}

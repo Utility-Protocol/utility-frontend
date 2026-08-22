@@ -47,3 +47,6 @@ next-env.d.ts
 
 # Lighthouse CI local artifacts
 .lighthouseci/
+
+# performance regression
+/performance-results/
