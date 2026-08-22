@@ -213,6 +213,7 @@ describe("useVirtualList", () => {
         items,
         estimatedItemHeight: 40,
         scrollRestorationKey: key,
+        useContainerScroll: false,
       })
     );
 

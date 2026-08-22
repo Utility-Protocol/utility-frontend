@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, type ReactNode } from "react";
+import { useCallback, useRef, type ReactNode } from "react";
 import {
   useVirtualList,
   type UseVirtualListOptions,
@@ -107,9 +107,15 @@ export function VirtualList<T>({
   } = useVirtualList(hookOptions);
 
   // Factory that produces a stable `measureRef` per row index.
+  const measureRefs = useRef<Record<number, (el: HTMLElement | null) => void>>({});
   const createMeasureRef = useCallback(
-    (index: number) => (el: HTMLElement | null) => {
-      measureElement(index, el);
+    (index: number) => {
+      if (!measureRefs.current[index]) {
+        measureRefs.current[index] = (el: HTMLElement | null) => {
+          measureElement(index, el);
+        };
+      }
+      return measureRefs.current[index];
     },
     [measureElement]
   );

@@ -4,6 +4,14 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setupDev } from "../../scripts/setup-dev";
 
+vi.mock("node:child_process", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:child_process")>();
+  return {
+    ...actual,
+    execFileSync: vi.fn(),
+  };
+});
+
 const tempDirs: string[] = [];
 
 function makeTempProject(): string {

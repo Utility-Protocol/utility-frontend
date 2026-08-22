@@ -189,13 +189,15 @@ export function useVirtualList<T>(
 
   const handleScroll = useCallback(() => {
     if (rafRef.current !== null) return; // coalesce to one per frame
-    rafRef.current = requestAnimationFrame(() => {
+    let syncExecuted = false;
+    const id = requestAnimationFrame(() => {
+      syncExecuted = true;
       rafRef.current = null;
       const el = containerRef.current;
-      if (!el) return;
+      if (useContainerScroll && !el) return;
 
-      const top = useContainerScroll ? el.scrollTop : window.scrollY;
-      const height = useContainerScroll ? el.clientHeight : window.innerHeight;
+      const top = useContainerScroll && el ? el.scrollTop : window.scrollY;
+      const height = useContainerScroll && el ? el.clientHeight : window.innerHeight;
 
       setScrollTop(top);
       setContainerHeight(height);
@@ -222,6 +224,9 @@ export function useVirtualList<T>(
         onLoadMore();
       }
     });
+    if (!syncExecuted) {
+      rafRef.current = id;
+    }
   }, [useContainerScroll, scrollRestorationKey, onLoadMore, loadMoreThreshold]);
 
   // Attach / detach scroll listener.
@@ -308,6 +313,7 @@ export function useVirtualList<T>(
     (index: number, element: HTMLElement | null) => {
       if (!element) return;
       const measured = element.getBoundingClientRect().height;
+      if (measured === 0) return; // Skip 0-height measurements (e.g. jsdom or hidden)
       const prev = measuredHeights.current.get(index);
       if (prev !== measured) {
         measuredHeights.current.set(index, measured);
