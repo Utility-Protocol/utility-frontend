@@ -32,7 +32,7 @@ function hasArg(argv: string[], name: string): boolean {
 
 function commandExists(command: string, cwd: string): boolean {
   try {
-    execFileSync(command, ["--version"], { cwd, stdio: "ignore" });
+    execFileSync(command, ["--version"], { cwd, stdio: "ignore", shell: process.platform === "win32" });
     return true;
   } catch {
     return false;
@@ -68,7 +68,7 @@ export function setupDev(options: SetupOptions = {}): SetupResult {
   const runCommand =
     options.runCommand ??
     ((command: string, args: string[], commandCwd: string) => {
-      execFileSync(command, args, { cwd: commandCwd, stdio: "inherit" });
+      execFileSync(command, args, { cwd: commandCwd, stdio: "inherit", shell: process.platform === "win32" });
     });
 
   if (major(process.version) < REQUIRED_NODE_MAJOR) {
