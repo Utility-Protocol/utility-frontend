@@ -1,0 +1,16 @@
+name: Deploy Frontend (Production)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: Deploy Web Portal
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Production Deployment Stub
+        run: |
+          echo "Frontend production deployment triggered on main."
+          # Insert Vercel / Cloudflare Pages / AWS S3 deployment steps
